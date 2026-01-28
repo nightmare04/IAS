@@ -4,20 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9f1c7bd3-b4dd-4023-bf0b-395a16ce6760" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/IAS.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/example.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/models.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/forms/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/forms/custom_mod.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/forms/main_form.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+    <list default="true" id="9f1c7bd3-b4dd-4023-bf0b-395a16ce6760" name="Changes" comment="init">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/models.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -34,9 +23,9 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 7
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 7
+}</component>
   <component name="ProjectId" id="38rkT2hxeJ5RTGg0jd38swxHYrN" />
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="2" id="Add" />
@@ -53,6 +42,7 @@
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "master",
+    "last_opened_file_path": "C:/Users/Nightmare/Documents/GitHub/IAS",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -126,12 +116,34 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1769565081480</updated>
-      <workItem from="1769565082512" duration="1902000" />
+      <workItem from="1769565082512" duration="2138000" />
+      <workItem from="1769595853401" duration="1541000" />
     </task>
+    <task id="LOCAL-00001" summary="init">
+      <option name="closed" value="true" />
+      <created>1769567089102</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1769567089102</updated>
+    </task>
+    <task id="LOCAL-00002" summary="init">
+      <option name="closed" value="true" />
+      <created>1769567101959</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1769567101959</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="init" />
+    <option name="LAST_COMMIT_MESSAGE" value="init" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/IAS$main.coverage" NAME="main Coverage Results" MODIFIED="1769566446100" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="C:\Users\Nightmare\Documents\GitHub\IAS" />
