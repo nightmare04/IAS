@@ -4,21 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9f1c7bd3-b4dd-4023-bf0b-395a16ce6760" name="Changes" comment="models for database">
-      <change afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/init_table.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/forms/custom_components/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/forms/custom_components/groups.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/forms/custom_components/tables.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/forms/frames/ispravnost.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/example.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/example.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/forms/custom_mod.py" beforeDir="false" afterPath="$PROJECT_DIR$/forms/custom_components/buttons.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/forms/main_form.py" beforeDir="false" afterPath="$PROJECT_DIR$/forms/main_form.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-    </list>
+    <list default="true" id="9f1c7bd3-b4dd-4023-bf0b-395a16ce6760" name="Changes" comment="check" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -34,6 +20,12 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/nightmare04/IAS",
+    "accountId": "cae6b75f-ceb4-4b8b-9131-b03ded047320"
+  }
+}]]></component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 7
 }</component>
@@ -135,7 +127,7 @@
       <updated>1769565081480</updated>
       <workItem from="1769565082512" duration="2138000" />
       <workItem from="1769595853401" duration="6657000" />
-      <workItem from="1769604073027" duration="1450000" />
+      <workItem from="1769604073027" duration="1802000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <option name="closed" value="true" />
@@ -161,16 +153,48 @@
       <option name="project" value="LOCAL" />
       <updated>1769597428735</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="check">
+      <option name="closed" value="true" />
+      <created>1769606137024</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1769606137025</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="HEAD" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="init" />
     <MESSAGE value="models for database" />
-    <option name="LAST_COMMIT_MESSAGE" value="models for database" />
+    <MESSAGE value="check" />
+    <option name="LAST_COMMIT_MESSAGE" value="check" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
