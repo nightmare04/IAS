@@ -1,9 +1,10 @@
 from PyQt6.QtGui import QAction
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QPushButton, QFrame,
+    QFrame,
 )
-from .custom_mod import IASButton
+from .custom_components import IASButton
+from .frames.ispravnost import IspravnostFrame
 
 
 class MainForm(QMainWindow):
@@ -11,9 +12,6 @@ class MainForm(QMainWindow):
         super().__init__()
         self.menu = self.menuBar()
 
-        self.init_ui()
-
-    def init_ui(self):
         settings_menu = self.menu.addMenu("&Настройки")
         type_action = QAction('Типы самолетов', self)
         podr_action = QAction('Подразделения', self)
@@ -32,7 +30,7 @@ class MainForm(QMainWindow):
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
 
-        self.frame = QFrame ()
+        self.frame = IspravnostFrame()
         main_layout = QHBoxLayout()
         button_panel = self.create_button_panel()
         main_layout.addWidget(button_panel, stretch=2)

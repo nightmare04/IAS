@@ -1,4 +1,8 @@
+from PyQt6.QtCore import QSize
 from PyQt6.QtWidgets import QPushButton
+
+from data import PlaneBase
+
 
 class IASButton(QPushButton):
     def __init__(self, parent=None):
@@ -18,3 +22,12 @@ class IASButton(QPushButton):
                 background-color: #bdc3c7;
             }
         """)
+
+class PlaneBtn(QPushButton):
+    def __init__(self, plane: PlaneBase, parent=None):
+        self.plane = plane
+        super().__init__(self.plane.bort_number, parent)
+        self.setFixedSize(QSize(60, 40))
+        self.setCheckable(True)
+        self.setStyleSheet("PlaneBtn{background-color: red;}"
+                           "PlaneBtn:checked{background-color: green;}")

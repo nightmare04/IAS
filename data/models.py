@@ -1,10 +1,9 @@
 import datetime
 
 from peewee import *
-from playhouse.sqlite_ext import SqliteExtDatabase
 
 
-db = SqliteExtDatabase('./data/database.db', pragmas={'foreign_keys': 1})
+db = SqliteDatabase('./data/database.db', pragmas={'foreign_keys': 1})
 
 class BaseModel(Model):
     id = IntegerField(primary_key=True)
@@ -13,44 +12,44 @@ class BaseModel(Model):
     class Meta:
         database = db
 
-class PlaneType(BaseModel):
+class PlaneTypeBase(BaseModel):
     name = CharField(unique=True)
 
-class Podrazd(BaseModel):
+class PodrazdBase(BaseModel):
     name = CharField(unique=True)
 
-class Spec(BaseModel):
-    plane_type = ForeignKeyField(PlaneType)
+class SpecBase(BaseModel):
+    plane_type = ForeignKeyField(PlaneTypeBase)
     name = CharField(unique=True)
 
-class Group(BaseModel):
-    spec = ForeignKeyField(Spec)
+class GroupBase(BaseModel):
+    spec = ForeignKeyField(SpecBase)
     name = CharField(unique=True)
 
-class PlaneSystem(BaseModel):
-    plane_type = ForeignKeyField(PlaneType)
+class PlaneSystemBase(BaseModel):
+    plane_type = ForeignKeyField(PlaneTypeBase)
     name = CharField(unique=True)
-    group = ForeignKeyField(Group)
+    group = ForeignKeyField(GroupBase)
 
-class Agregate(BaseModel):
-    system = ForeignKeyField(PlaneSystem)
+class AgregateBase(BaseModel):
+    plane_type = ForeignKeyField(PlaneTypeBase)
+    system = ForeignKeyField(PlaneSystemBase)
     count_on_plane = IntegerField(default=1)
     name = CharField(unique=False)
 
-class Plane(BaseModel):
-    plane_type = ForeignKeyField(PlaneType)
-    podrazd = ForeignKeyField(Podrazd)
-    number = CharField(unique=True)
+class PlaneBase(BaseModel):
+    plane_type = ForeignKeyField(PlaneTypeBase)
+    podrazd = ForeignKeyField(PodrazdBase)
+    zav_num = CharField(unique=True)
     bort_number = CharField(unique=True)
-    date_of_birth = DateField()
 
-class OtkazAgregate(BaseModel):
-    agregate = ForeignKeyField(Agregate)
-    plane = ForeignKeyField(Plane)
+class OtkazAgregateBase(BaseModel):
+    agregate = ForeignKeyField(AgregateBase)
+    plane = ForeignKeyField(PlaneBase)
     number = CharField()
 
-class OtsutAgregate(BaseModel):
-    agregate = ForeignKeyField(Agregate)
-    plane = ForeignKeyField(Plane)
+class OtsutAgregateBase(BaseModel):
+    agregate = ForeignKeyField(AgregateBase)
+    plane = ForeignKeyField(PlaneBase)
     number = CharField()
 
