@@ -1,17 +1,17 @@
 from PyQt6.QtCore import Qt, QModelIndex, QAbstractTableModel
-from PyQt6.QtGui import QBrush, QColor
+from PyQt6.QtGui import QBrush, QColor, QFont
 from PyQt6.QtWidgets import QTableView, QAbstractItemView
 
 
-class GroupTableModel(QAbstractTableModel):
-    def __init__(self, data=None, headers=None, parent=None):
+class IspravnostTableModel(QAbstractTableModel):
+    def __init__(self, plane, headers=None, parent=None):
         super().__init__(parent)
         self._headers = headers or []
         self._prepared_data = []
         self._group_rows = []
         self._group_values = []
-        if data:
-            self.load_data(data)
+        if plane:
+            self.load_data(plane)
 
     def load_data(self, data):
         """Загружает данные из запроса Peewee"""
@@ -22,13 +22,13 @@ class GroupTableModel(QAbstractTableModel):
         self._group_values = []
 
         # Сортируем по категории
-        sorted_data = sorted(data, key=lambda x: str(x.category.name))
+        sorted_data = sorted(data, key=lambda x: str(x.group.name))
 
         current_group = None
         row_idx = 0
 
         for item in sorted_data:
-            group_value = str(item.category.name)
+            group_value = str(item.group.name)
 
             # Если началась новая группа
             if group_value != current_group:
@@ -99,7 +99,7 @@ class GroupTableModel(QAbstractTableModel):
         return row in self._group_rows
 
 
-class GroupingTableView(QTableView):
+class IspravnostTableView(QTableView):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setAlternatingRowColors(True)
@@ -107,7 +107,7 @@ class GroupingTableView(QTableView):
 
     def setSpanForGroups(self):
         model = self.model()
-        if isinstance(model, GroupTableModel):
+        if isinstance(model, IspravnostTableModel):
             for row in range(model.rowCount()):
                 if model.isGroupRow(row):
                     self.setSpan(row, 0, 1, model.columnCount())

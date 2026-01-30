@@ -48,8 +48,4 @@ class OtkazAgregateBase(BaseModel):
     plane = ForeignKeyField(PlaneBase)
     number = CharField()
 
-class OtsutAgregateBase(BaseModel):
-    agregate = ForeignKeyField(AgregateBase)
-    plane = ForeignKeyField(PlaneBase)
-    number = CharField()
 

@@ -7,7 +7,7 @@ def create_tables():
         db.create_tables(
             [
                 PlaneBase, PlaneSystemBase, PlaneTypeBase,
-                OtsutAgregateBase, OtkazAgregateBase,
+                OtkazAgregateBase,
                 SpecBase, PodrazdBase, GroupBase, AgregateBase
             ]
         )
@@ -17,7 +17,7 @@ def drop_tables():
         db.drop_tables(
             [
                 PlaneBase, PlaneSystemBase, PlaneTypeBase,
-                OtsutAgregateBase, OtkazAgregateBase,
+                OtkazAgregateBase,
                 SpecBase, PodrazdBase, GroupBase, AgregateBase
             ]
         )
