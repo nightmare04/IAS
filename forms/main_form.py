@@ -37,7 +37,6 @@ class MainForm(QMainWindow):
         main_layout.addWidget(self.frame, stretch=8)
         self.central_widget.setLayout(main_layout)
 
-
     def create_button_panel(self) -> QWidget:
         """Создание панели кнопок"""
         panel = QWidget()

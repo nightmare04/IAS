@@ -2,6 +2,8 @@ from PyQt6.QtCore import Qt, QModelIndex, QAbstractTableModel
 from PyQt6.QtGui import QBrush, QColor, QFont
 from PyQt6.QtWidgets import QTableView, QAbstractItemView
 
+from data import PlaneBase, OtkazAgregateBase
+
 
 class IspravnostTableModel(QAbstractTableModel):
     def __init__(self, plane, headers=None, parent=None):
@@ -10,24 +12,20 @@ class IspravnostTableModel(QAbstractTableModel):
         self._prepared_data = []
         self._group_rows = []
         self._group_values = []
-        if plane:
-            self.load_data(plane)
 
     def load_data(self, data):
         """Загружает данные из запроса Peewee"""
         self.beginResetModel()
-
         self._prepared_data = []
         self._group_rows = []
         self._group_values = []
-
         # Сортируем по категории
-        sorted_data = sorted(data, key=lambda x: str(x.group.name))
+        #sorted_data = sorted(data, key=lambda x: str(x.agregate.group.name))
 
         current_group = None
         row_idx = 0
 
-        for item in sorted_data:
+        for item in data:
             group_value = str(item.group.name)
 
             # Если началась новая группа

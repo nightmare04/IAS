@@ -9,7 +9,7 @@ class PlaneIspravnost(QDialog):
         super().__init__(parent)
         self.plane = plane
         self.parent = parent
-        self.setWindowTitle(f"Исправность самолета {PlaneTypeBase.get_by_id(self.plane.plane_type)} {self.plane.bort_number}")
+        self.setWindowTitle(f"Исправность самолета {self.plane.plane_type.name} {self.plane.bort_number}")
         self.setGeometry(100, 100, 800, 600)
 
         self.create_widgets()
@@ -28,13 +28,13 @@ class PlaneIspravnost(QDialog):
 
         self.filter_combo.currentTextChanged.connect(self.filter_by_category)
 
-        self.add_btn = QPushButton("➕ Добавить продукт")
+        self.add_btn = QPushButton("➕ Добавить блок / агрегат")
         self.add_btn.clicked.connect(self.add_product)
 
         self.refresh_btn = QPushButton("🔄 Обновить")
         self.refresh_btn.clicked.connect(self.refresh_data)
 
-        self.control_layout.addWidget(QLabel("Фильтр по категории:"))
+        self.control_layout.addWidget(QLabel("Фильтр по группе:"))
         self.control_layout.addWidget(self.filter_combo)
         self.control_layout.addStretch()
         self.control_layout.addWidget(self.add_btn)
@@ -68,13 +68,13 @@ class PlaneIspravnost(QDialog):
 
         # Подключаем двойной клик
         self.table_view.doubleClicked.connect(self.on_double_click)
+        self.load_data()
 
     def load_data(self, category_filter=None):
         try:
             query = (OtkazAgregateBase
-                     .select(AgregateBase, PlaneBase, GroupBase)
-                     .join(AgregateBase)
-                     .where(PlaneBase.id == self.plane.id))
+                     .select()
+                     .where(OtkazAgregateBase.plane == self.plane.id))
 
             if category_filter and category_filter != "Все группы":
                 query = query.where(GroupBase.name == category_filter)

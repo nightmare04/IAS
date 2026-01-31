@@ -89,3 +89,5 @@ def example_data():
             PlaneBase.create(**plane)
         for agregate in agregate_data:
             AgregateBase.create(**agregate)
+        for otkaz in otkaz_agr_data:
+            OtkazAgregateBase.create(**otkaz)

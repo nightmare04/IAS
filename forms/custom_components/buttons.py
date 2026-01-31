@@ -1,7 +1,8 @@
 from PyQt6.QtCore import QSize
-from PyQt6.QtWidgets import QPushButton
+from PyQt6.QtWidgets import QPushButton, QDialog
 
 from data import PlaneBase
+from forms.plane_ispravnost import PlaneIspravnost
 
 
 class IASButton(QPushButton):
@@ -28,6 +29,11 @@ class PlaneBtn(QPushButton):
         self.plane = plane
         super().__init__(self.plane.bort_number, parent)
         self.setFixedSize(QSize(60, 40))
-        self.setCheckable(True)
+        self.setCheckable(False)
         self.setStyleSheet("PlaneBtn{background-color: red;}"
                            "PlaneBtn:checked{background-color: green;}")
+        self.clicked.connect(self.open_dialog)
+
+    def open_dialog(self):
+        dialog = PlaneIspravnost(self.plane)
+        dialog.exec()
