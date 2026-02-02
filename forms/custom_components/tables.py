@@ -1,13 +1,14 @@
 from PyQt6.QtCore import Qt, QModelIndex, QAbstractTableModel
 from PyQt6.QtGui import QBrush, QColor, QFont
-from PyQt6.QtWidgets import QTableView, QAbstractItemView
+from PyQt6.QtWidgets import QTableView, QAbstractItemView, QSizePolicy, QHeaderView
 
 from data import PlaneBase, OtkazAgregateBase
 
 
 class IspravnostTableModel(QAbstractTableModel):
-    def __init__(self, plane, headers=None, parent=None):
+    def __init__(self, data, headers=None, parent=None):
         super().__init__(parent)
+        self._data = data
         self._headers = headers or []
         self._prepared_data = []
         self._group_rows = []
@@ -20,13 +21,13 @@ class IspravnostTableModel(QAbstractTableModel):
         self._group_rows = []
         self._group_values = []
         # Сортируем по категории
-        #sorted_data = sorted(data, key=lambda x: str(x.agregate.group.name))
+        sorted_data = sorted(data, key=lambda x: str(x.agregate.system.name))
 
         current_group = None
         row_idx = 0
 
-        for item in data:
-            group_value = str(item.group.name)
+        for item in sorted_data:
+            group_value = str(item.agregate.system.group.name)
 
             # Если началась новая группа
             if group_value != current_group:
@@ -38,7 +39,7 @@ class IspravnostTableModel(QAbstractTableModel):
                 current_group = group_value
 
             # Добавляем обычную строку данных
-            row_data = [item.name, item.color, str(item.price)]
+            row_data = [item.agregate.name, item.agregate.system.name, item.number, '']
             self._prepared_data.append(row_data)
             row_idx += 1
 
@@ -102,6 +103,8 @@ class IspravnostTableView(QTableView):
         super().__init__(parent)
         self.setAlternatingRowColors(True)
         self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding))
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
     def setSpanForGroups(self):
         model = self.model()

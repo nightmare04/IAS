@@ -59,13 +59,6 @@ group_data = [
     {'plane_type': 1, 'spec':3, 'name': 'ЭО и ЭА'},
     {'plane_type': 1, 'spec': 3, 'name': 'ПНК'},
     {'plane_type': 1, 'spec': 3, 'name': 'ПК и ФО'},
-    {'plane_type': 1, 'spec': 1, 'name': 'СД'},
-    {'plane_type': 1, 'spec': 2, 'name': 'АВ'},
-    {'plane_type': 1, 'spec': 2, 'name': 'СПВ'},
-    {'plane_type': 1, 'spec': 4, 'name': 'РСО'},
-    {'plane_type': 1, 'spec': 4, 'name': 'РТО'},
-    {'plane_type': 1, 'spec': 4, 'name': 'РНО'},
-    {'plane_type': 1, 'spec': 4, 'name': 'РЭБ'},
 ]
 
 otkaz_agr_data = [
