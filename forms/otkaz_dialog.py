@@ -1,10 +1,11 @@
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QFormLayout, QLineEdit, QComboBox
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QFormLayout, QLineEdit, QComboBox, QDialogButtonBox, QMessageBox
 
-from data import GroupBase
+from data import GroupBase, PlaneBase, PlaneSystemBase, PlaneTypeBase, OtkazAgregateBase, AgregateBase
 
 
 class AddOtkazDialog(QDialog):
-    def __init__(self, plane, parent=None):
+    def __init__(self, plane: PlaneBase, parent=None):
         super().__init__(parent)
         self.plane = plane
         self.setWindowTitle("Добавление отказавшего блока/агрегата")
@@ -18,27 +19,26 @@ class AddOtkazDialog(QDialog):
         self.group_combo = QComboBox()
         self.group_combo.addItem('Выберите группу обслуживания')
         self.group_combo.currentTextChanged.connect(self.load_system)
-        groups = GroupBase.select().where()
+        groups = GroupBase.select().where(GroupBase.plane_type == self.plane.plane_type)
+        for group in groups:
+            self.group_combo.addItem(group.name, group.id)
 
         self.system_combo = QComboBox()
-        self.system_combo.addItem('Выберите систему самолета')
+        self.system_combo.currentTextChanged.connect(self.load_agregate)
+
+        self.agregate_combo = QComboBox()
 
         self.agregate_number = QLineEdit()
         self.desc = QLineEdit()
 
-    def load_system(self):
-        categories = Category.select().order_by(Category.name)
-        for category in categories:
-            self.category_combo.addItem(category.name, category.id)
 
-        form_layout.addRow("Категория:", self.category_combo)
-        form_layout.addRow("Название:", self.system_edit)
-        form_layout.addRow("Цвет:", self.agregate_number)
-        form_layout.addRow("Цена:", self.desc)
+        form_layout.addRow("Группа обслуживания:", self.group_combo)
+        form_layout.addRow("Система самолета:", self.system_combo)
+        form_layout.addRow("Агрегат/блок:", self.agregate_combo)
+        form_layout.addRow("Номер блока/агрегата:", self.agregate_number)
+        form_layout.addRow("Примечание:", self.desc)
 
         layout.addLayout(form_layout)
-
-        self.desc.setValidator(QIntValidator(0, 1000000))
 
         button_box = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
@@ -49,23 +49,31 @@ class AddOtkazDialog(QDialog):
         layout.addWidget(button_box)
         self.setLayout(layout)
 
+    def load_system(self):
+        self.system_combo.clear()
+        systems = PlaneSystemBase.select().where(PlaneSystemBase.group == self.group_combo.currentData())
+        for system in systems:
+            self.system_combo.addItem(system.name, system.id)
+
+    def load_agregate(self):
+        self.agregate_combo.clear()
+        agregate_list = AgregateBase.select().where(AgregateBase.system == self.system_combo.currentData())
+        for agregate in agregate_list:
+            self.agregate_combo.addItem(agregate.name, agregate.id)
+
+
+
     def accept_and_save(self):
-        if not self.system_edit.text().strip():
-            QMessageBox.warning(self, "Ошибка", "Введите название продукта!")
-            return
-
         try:
-            category_id = self.category_combo.currentData()
-            category = Category.get(Category.id == category_id)
+            agregate = self.agregate_combo.currentData()
 
-            Product.create(
-                category=category,
-                name=self.system_edit.text(),
-                color=self.agregate_number.text(),
-                price=int(self.desc.text() or 0)
+            OtkazAgregateBase.create(
+                agregate=agregate,
+                plane=self.plane.id,
+                number=self.agregate_number.text()
             )
 
             self.accept()
 
         except Exception as e:
-            QMessageBox.warning(self, "Ошибка", f"Не удалось добавить продукт: {str(e)}")
+            QMessageBox.warning(self, "Ошибка", f"Не удалось добавить агрегат/блок: {str(e)}")

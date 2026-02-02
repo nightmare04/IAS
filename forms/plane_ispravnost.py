@@ -56,7 +56,7 @@ class PlaneIspravnost(QDialog):
         self.load_data(category_filter=category)
 
     def add_otkaz(self):
-        dialog = AddOtkazDialog(self, self.plane)
+        dialog = AddOtkazDialog(self.plane)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             self.refresh_data()
 
