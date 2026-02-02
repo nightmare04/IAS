@@ -47,6 +47,7 @@ class PlaneBase(BaseModel):
 class OtkazAgregateBase(BaseModel):
     agregate = ForeignKeyField(AgregateBase)
     plane = ForeignKeyField(PlaneBase)
+    description = CharField(unique=False, default='')
     number = CharField()
 
 

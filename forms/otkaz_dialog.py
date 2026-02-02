@@ -1,7 +1,7 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QFormLayout, QLineEdit, QComboBox, QDialogButtonBox, QMessageBox
 
-from data import GroupBase, PlaneBase, PlaneSystemBase, PlaneTypeBase, OtkazAgregateBase, AgregateBase
+from data import GroupBase, PlaneBase, PlaneSystemBase, OtkazAgregateBase, AgregateBase
 
 
 class AddOtkazDialog(QDialog):
@@ -40,13 +40,14 @@ class AddOtkazDialog(QDialog):
 
         layout.addLayout(form_layout)
 
-        button_box = QDialogButtonBox(
+        self.button_box = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
         )
-        button_box.accepted.connect(self.accept_and_save)
-        button_box.rejected.connect(self.reject)
 
-        layout.addWidget(button_box)
+        self.button_box.accepted.connect(self.accept_and_save)
+        self.button_box.rejected.connect(self.reject)
+
+        layout.addWidget(self.button_box)
         self.setLayout(layout)
 
     def load_system(self):
@@ -77,3 +78,17 @@ class AddOtkazDialog(QDialog):
 
         except Exception as e:
             QMessageBox.warning(self, "Ошибка", f"Не удалось добавить агрегат/блок: {str(e)}")
+
+
+class EditOtkazDialog(AddOtkazDialog):
+    def __init__(self, otkaz_agregate: OtkazAgregateBase, parent=None):
+        super().__init__(parent)
+        self.otkaz_agregate = otkaz_agregate
+        self.setWindowTitle('Редактирование отказавшего блока/агрегата')
+        self.load_data()
+
+    def load_data(self):
+        self.group_combo.setCurrentText(self.otkaz_agregate.agregate.system.group.name)
+        self.system_combo.setCurrentText(self.otkaz_agregate.agregate.system.name)
+        self.agregate_number.setText(self.otkaz_agregate.number)
+        self.desc.setText(self.otkaz_agregate.description)
