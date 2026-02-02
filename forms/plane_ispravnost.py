@@ -3,6 +3,7 @@ from PyQt6.QtWidgets import QDialog, QWidget, QVBoxLayout, QHBoxLayout, QComboBo
 
 from data import PlaneBase, GroupBase, AgregateBase, OtkazAgregateBase, PlaneSystemBase
 from forms.custom_components.tables import IspravnostTableModel, IspravnostTableView
+from forms.otkaz_dialog import AddOtkazDialog
 
 
 class PlaneIspravnost(QDialog):
@@ -26,7 +27,7 @@ class PlaneIspravnost(QDialog):
         self.filter_combo.currentTextChanged.connect(self.filter_by_category)
 
         self.add_btn = QPushButton("➕ Добавить блок / агрегат")
-        self.add_btn.clicked.connect(self.add_product)
+        self.add_btn.clicked.connect(self.add_otkaz)
 
         self.control_layout.addWidget(QLabel("Фильтр по группе:"))
         self.control_layout.addWidget(self.filter_combo)
@@ -54,8 +55,10 @@ class PlaneIspravnost(QDialog):
     def filter_by_category(self, category):
         self.load_data(category_filter=category)
 
-    def add_product(self):
-        pass
+    def add_otkaz(self):
+        dialog = AddOtkazDialog(self, self.plane)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            self.refresh_data()
 
     def refresh_data(self):
         self.load_data()

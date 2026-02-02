@@ -23,6 +23,7 @@ class SpecBase(BaseModel):
     name = CharField(unique=True)
 
 class GroupBase(BaseModel):
+    plane_type = ForeignKeyField(PlaneTypeBase)
     spec = ForeignKeyField(SpecBase)
     name = CharField(unique=True)
 
