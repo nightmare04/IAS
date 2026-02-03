@@ -44,11 +44,11 @@ class AddOtkazDialog(QDialog):
         #     QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
         # )
         self.button_box = QDialogButtonBox()
-        save_button = self.button_box.addButton("Сохранить", QDialogButtonBox.ButtonRole.AcceptRole)
-        cancel_button = self.button_box.addButton("Отмена", QDialogButtonBox.ButtonRole.RejectRole)
+        self.save_button = self.button_box.addButton("Сохранить", QDialogButtonBox.ButtonRole.AcceptRole)
+        self.cancel_button = self.button_box.addButton("Отмена", QDialogButtonBox.ButtonRole.RejectRole)
 
-        save_button.clicked.connect(self.accept_and_save)
-        cancel_button.clicked.connect(self.reject)
+        self.save_button.clicked.connect(self.create_item)
+        self.cancel_button.clicked.connect(self.reject)
 
         layout.addWidget(self.button_box)
         self.setLayout(layout)
@@ -67,7 +67,7 @@ class AddOtkazDialog(QDialog):
 
 
 
-    def accept_and_save(self):
+    def create_item(self):
         try:
             agregate = self.agregate_combo.currentData()
 
@@ -85,10 +85,11 @@ class AddOtkazDialog(QDialog):
 
 class EditOtkazDialog(AddOtkazDialog):
     def __init__(self, otkaz_agregate: OtkazAgregateBase, parent=None):
-
         super().__init__(otkaz_agregate.plane, parent)
         self.otkaz_agregate = otkaz_agregate
         self.setWindowTitle('Изменить')
+        self.save_button.clicked.disconnect()
+        self.save_button.clicked.connect(self.edit_item)
         delete_button = self.button_box.addButton("Удалить", QDialogButtonBox.ButtonRole.DestructiveRole)
         delete_button.clicked.connect(self.delete_item)
         self.load_data()
@@ -98,6 +99,19 @@ class EditOtkazDialog(AddOtkazDialog):
         self.system_combo.setCurrentText(self.otkaz_agregate.agregate.system.name)
         self.agregate_number.setText(self.otkaz_agregate.number)
         self.desc.setText(self.otkaz_agregate.description)
+
+    def edit_item(self):
+        try:
+            agregate = self.agregate_combo.currentData()
+            item = self.otkaz_agregate
+            item.agregate = agregate
+            item.number = self.agregate_number.text()
+            item.save()
+            self.accept()
+
+        except Exception as e:
+            QMessageBox.warning(self, "Ошибка", f"Не удалось сохранить агрегат/блок: {str(e)}")
+
 
     def delete_item(self):
         try:
