@@ -1,4 +1,7 @@
-from .models import *
+from peewee import SqliteDatabase
+
+from data import PlaneTypeBase, SpecBase, GroupBase, PlaneSystemBase, PodrazdBase, PlaneBase, AgregateBase, \
+    OtkazAgregateBase
 
 db = SqliteDatabase('./data/database.db', pragmas={'foreign_keys': 1})
 

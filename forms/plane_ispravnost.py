@@ -1,9 +1,9 @@
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QDialog, QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton, QLabel, QMessageBox
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QWidget, QHBoxLayout, QComboBox, QPushButton, QLabel, QMessageBox
 
-from data import PlaneBase, GroupBase, AgregateBase, OtkazAgregateBase, PlaneSystemBase
-from forms.custom_components.tables import IspravnostTableModel, IspravnostTableView
-from forms.otkaz_dialog import AddOtkazDialog, EditOtkazDialog
+from data import PlaneBase, GroupBase, OtkazAgregateBase, AgregateBase, PlaneSystemBase
+from forms import AddOtkazDialog, EditOtkazDialog
+from forms.custom_components import IspravnostTableModel, IspravnostTableView
 
 
 class PlaneIspravnost(QDialog):
@@ -12,7 +12,6 @@ class PlaneIspravnost(QDialog):
         self.plane = plane
         self.setWindowTitle(f"Исправность самолета {self.plane.plane_type.name} №{self.plane.bort_number}")
         self.setGeometry(100, 100, 800, 600)
-        self.central_widget = QWidget(self)
         self.main_layout = QVBoxLayout()
         self.setLayout(self.main_layout)
 

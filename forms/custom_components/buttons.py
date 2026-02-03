@@ -2,7 +2,7 @@ from PyQt6.QtCore import QSize
 from PyQt6.QtWidgets import QPushButton
 
 from data import PlaneBase, OtkazAgregateBase
-from forms.plane_ispravnost import PlaneIspravnost
+from forms import PlaneIspravnost
 
 
 class IASButton(QPushButton):

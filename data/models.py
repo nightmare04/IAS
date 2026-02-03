@@ -19,7 +19,6 @@ class PodrazdBase(BaseModel):
     name = CharField(unique=True)
 
 class SpecBase(BaseModel):
-    plane_type = ForeignKeyField(PlaneTypeBase)
     name = CharField(unique=True)
 
 class GroupBase(BaseModel):

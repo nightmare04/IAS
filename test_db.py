@@ -10,5 +10,4 @@ query = (OtkazAgregateBase
          .join(GroupBase)
          .where(GroupBase.name == 'ЭО и ЭА'))
 
-for data in query:
-    print(data)
+print(query[0].plane)

@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QFrame, QGridLayout, QAbstractItemView
-from data.models import PodrazdBase
-from forms.custom_components.buttons import PlaneBtn
-from forms.custom_components.groups import PodrGroup
+
+from data import PodrazdBase
+from forms.custom_components import PodrGroup, PlaneBtn
 
 
 class IspravnostFrame(QFrame):

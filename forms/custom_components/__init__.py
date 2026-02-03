@@ -1,6 +1,3 @@
-from .buttons import IASButton
-
-
-__all__ = [
-    "IASButton",
-]
+from buttons import *
+from groups import *
+from tables import *

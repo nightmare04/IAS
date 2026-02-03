@@ -2,8 +2,8 @@ from PyQt6.QtCore import Qt, QModelIndex, QAbstractTableModel
 from PyQt6.QtGui import QBrush, QColor, QFont, QAction
 from PyQt6.QtWidgets import QTableView, QAbstractItemView, QSizePolicy, QHeaderView, QMessageBox, QMenu
 
-from data import  OtkazAgregateBase
-from forms.otkaz_dialog import EditOtkazDialog
+from data import OtkazAgregateBase, PlaneTypeBase, PodrazdBase, SpecBase, GroupBase
+from forms import EditOtkazDialog, AddPlaneType
 
 
 class IspravnostTableModel(QAbstractTableModel):
@@ -112,7 +112,6 @@ class IspravnostTableModel(QAbstractTableModel):
     def is_group_row(self, row):
         return row in self._group_rows
 
-
 class IspravnostTableView(QTableView):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -177,3 +176,159 @@ class IspravnostTableView(QTableView):
         item.delete_instance()
         parent.refresh_data()
 
+class UnTableModel(QAbstractTableModel):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._data = []
+        self._headers = []
+        self._items_ids = []
+    def load_data(self):
+        """Method for data loading."""
+        pass
+
+    def rowCount(self, parent=None):
+        return len(self._data)
+
+    def columnCount(self, parent=None):
+        return len(self._headers)
+
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
+        if not index.isValid():
+            return None
+        row = index.row()
+        col = index.column()
+
+        if 0 <= row < self.rowCount() and 0 <= col < self.columnCount():
+            if role == Qt.ItemDataRole.DisplayRole:
+                return self._data[row][col]
+
+        return None
+
+    def headerData(self, section, orientation, role=Qt.ItemDataRole.DisplayRole):
+        if role == Qt.ItemDataRole.DisplayRole:
+            if orientation == Qt.Orientation.Horizontal:
+                return self._headers[section]
+        return None
+
+    def get_item_id(self, row):
+        if 0 <= row < len(self._items_ids):
+            return self._items_ids[row]
+        return None
+
+class UnTableView(QTableView):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.parent = parent
+        self.setAlternatingRowColors(False)
+        self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding))
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.show_context_menu)
+
+    def show_context_menu(self, position):
+        index = self.indexAt(position)
+        model = self.model()
+
+        menu = QMenu(self)
+
+        if index.isValid() and isinstance(model, UnTableModel):
+            row = index.row()
+            item_id = model.get_item_id(row)
+            edit_action = QAction("✏️ Изменить элемент", self)
+            edit_action.triggered.connect(lambda: self.edit_item(item_id))
+            menu.addAction(edit_action)
+
+            delete_action = QAction("🗑️ Удалить элемент", self)
+            delete_action.triggered.connect(lambda: self.delete_item(item_id))
+            menu.addAction(delete_action)
+
+        menu.exec(self.viewport().mapToGlobal(position))
+
+    def edit_item(self, item_id):
+        pass
+
+    def delete_item(self, item_id):
+        pass
+
+
+class PlanesTypesModel(UnTableModel):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def load_data(self):
+        self.beginResetModel()
+        self._data = []
+        self._headers = ["Наименование"]
+        query = PlaneTypeBase.select()
+        for data in query:
+            self._data.append([data.name])
+            self._items_ids.append([data.id])
+        self.endResetModel()
+
+
+
+class PlaneTypesTable(UnTableView):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def edit_item(self, item_id):
+        dialog = AddPlaneType(data = item_id)
+        dialog.exec()
+        self.parent.refresh_data()
+
+    def delete_item(self, item_id):
+        item = PlaneTypeBase.get_by_id(item_id)
+        item.delete_instance()
+        self.parent.refresh_data()
+
+class PodrazdModel(UnTableModel):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def load_data(self):
+        self.beginResetModel()
+        self._headers = ["Наименование"]
+        query = PodrazdBase.select()
+        for data in query:
+            self._data.append([data.name])
+            self._items_ids.append([data.id])
+        self.endResetModel()
+
+class PodrazdTable(UnTableView):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+class SpecModel(UnTableModel):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def load_data(self):
+        self.beginResetModel()
+        self._headers = ["Специальность"]
+        query = SpecBase.select()
+        for data in query:
+            self._data.append([data.name])
+            self._items_ids.append([data.id])
+        self.endResetModel()
+
+class SpecTable(UnTableView):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+class GroupModel(UnTableModel):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def load_data(self):
+        self.beginResetModel()
+        self._headers = ["Группа", "Специальность", "Тип"]
+        query = GroupBase.select()
+        for data in query:
+            self._data.append([data.name, data.spec.name, data.plane_type.name])
+            self._items_ids.append([data.id])
+        self.endResetModel()
+
+class GroupTable(UnTableView):
+    def __init__(self, parent=None):
+        super().__init__(parent)

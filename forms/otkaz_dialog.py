@@ -1,4 +1,4 @@
-from PyQt6.QtCore import Qt
+
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QFormLayout, QLineEdit, QComboBox, QDialogButtonBox, QMessageBox
 
 from data import GroupBase, PlaneBase, PlaneSystemBase, OtkazAgregateBase, AgregateBase
@@ -40,9 +40,6 @@ class AddOtkazDialog(QDialog):
 
         layout.addLayout(form_layout)
 
-        # self.button_box = QDialogButtonBox(
-        #     QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
-        # )
         self.button_box = QDialogButtonBox()
         self.save_button = self.button_box.addButton("Сохранить", QDialogButtonBox.ButtonRole.AcceptRole)
         self.cancel_button = self.button_box.addButton("Отмена", QDialogButtonBox.ButtonRole.RejectRole)
