@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import QDialog, QWidget, QVBoxLayout, QHBoxLayout, QComboBo
 
 from data import PlaneBase, GroupBase, AgregateBase, OtkazAgregateBase, PlaneSystemBase
 from forms.custom_components.tables import IspravnostTableModel, IspravnostTableView
-from forms.otkaz_dialog import AddOtkazDialog
+from forms.otkaz_dialog import AddOtkazDialog, EditOtkazDialog
 
 
 class PlaneIspravnost(QDialog):
@@ -58,6 +58,7 @@ class PlaneIspravnost(QDialog):
         dialog = AddOtkazDialog(self.plane)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             self.refresh_data()
+            self.table_view.model().modelReset
 
     def refresh_data(self):
         self.load_data()
@@ -68,8 +69,9 @@ class PlaneIspravnost(QDialog):
             row = index.row()
             item_id = model.get_item_id(row)
             if item_id:
-                self.table_view.edit_item(item_id)
-        self.load_data()
+                dialog = EditOtkazDialog(OtkazAgregateBase.get(item_id))
+                if dialog.exec() == QDialog.DialogCode.Accepted:
+                    self.refresh_data()
 
     def setup_ui(self):
         self.main_layout.addWidget(self.control_panel)
@@ -77,7 +79,7 @@ class PlaneIspravnost(QDialog):
         self.main_layout.addWidget(self.status_label)
 
         # Настройка таблицы
-        self.table_view.setSpanForGroups()
+        self.table_view.set_span_for_groups()
         self.table_view.horizontalHeader().setStretchLastSection(True)
         self.table_view.verticalHeader().setVisible(False)
         self.table_view.setSortingEnabled(False)
@@ -99,7 +101,7 @@ class PlaneIspravnost(QDialog):
                 query = query.where(GroupBase.name == category_filter)
 
             self.model.load_data(query)
-            self.table_view.setSpanForGroups()
+            self.table_view.set_span_for_groups()
 
         except Exception as e:
             QMessageBox.warning(self, "Ошибка", f"Ошибка при загрузке данных: {str(e)}")

@@ -85,7 +85,7 @@ class IspravnostTableModel(QAbstractTableModel):
                 font.setPointSize(10)
                 return font
 
-            elif role == Qt.ItemDataRole.BackgroundRole and row in self._group_rows:
+            elif role == Qt.ItemDataRole.BackgroundRole and self._row_type[row] == 'group':
                 return QBrush(QColor(220, 220, 220))
 
             elif role == Qt.ItemDataRole.TextAlignmentRole and row in self._group_rows:
@@ -126,12 +126,22 @@ class IspravnostTableView(QTableView):
         self.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding))
         self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
-    def setSpanForGroups(self):
+    def set_span_for_groups(self):
+        self.clear_all_span()
         model = self.model()
         if isinstance(model, IspravnostTableModel):
             for row in range(model.rowCount()):
                 if model.is_group_row(row):
                     self.setSpan(row, 0, 1, model.columnCount())
+
+    def clear_all_span(self):
+        model = self.model()
+        if isinstance(model, IspravnostTableModel):
+            rows = model.rowCount()
+            cols = model.columnCount()
+            for row in range(rows):
+                for col in range(cols):
+                    self.setSpan(row, col, 1, 1)
 
     def edit_item(self, item_id):
         try:

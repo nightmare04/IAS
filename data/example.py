@@ -35,8 +35,8 @@ planes_data = [
 plane_system_data = [
     {'plane_type': 1, 'name': 'Система СКВ', 'group': 1},
     {'plane_type': 1, 'name': 'Система запуска', 'group': 1},
-    {'plane_type': 1, 'name': 'Приборы контроля работы двигателя', 'group': 1},
     {'plane_type': 1, 'name': 'Система запуска ВСУ', 'group': 1},
+    {'plane_type': 1, 'name': 'Приборы контроля работы двигателя', 'group': 3},
     {'plane_type': 1, 'name': 'РУМБ-1Б', 'group': 2},
 ]
 agregate_data = [
@@ -45,9 +45,11 @@ agregate_data = [
     {'plane_type': 1, 'system': 1,  'name': 'заслонка 1919Т'},
     {'plane_type': 1, 'system': 2,  'name': 'ПР-12'},
     {'plane_type': 1, 'system': 2,  'name': 'АПД-30ТА'},
-    {'plane_type': 1, 'system': 3,  'name': 'МТ-50'},
-    {'plane_type': 1, 'system': 4,  'name': 'ЭРРД-12'},
+    {'plane_type': 1, 'system': 4,  'name': 'МТ-50'},
+    {'plane_type': 1, 'system': 4,  'name': 'ДТ-5М'},
+    {'plane_type': 1, 'system': 3,  'name': 'ЭРРД-12'},
     {'plane_type': 1, 'system': 5,  'name': 'БУГ-14'},
+    {'plane_type': 1, 'system': 5,  'name': 'БК-12'},
 ]
 spec_data = [
     {'plane_type': 1, 'name': 'СД'},
@@ -64,6 +66,9 @@ group_data = [
 otkaz_agr_data = [
     {'plane': 1, 'number': '321123', 'agregate': 1},
     {'plane': 1, 'number': '321123', 'agregate': 8},
+    {'plane': 1, 'number': '321123', 'agregate': 6},
+    {'plane': 1, 'number': '321123', 'agregate': 9},
+    {'plane': 1, 'number': '321123', 'agregate': 10},
 ]
 
 def example_data():
