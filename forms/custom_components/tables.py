@@ -1,18 +1,21 @@
 from PyQt6.QtCore import Qt, QModelIndex, QAbstractTableModel
 from PyQt6.QtGui import QBrush, QColor, QFont
-from PyQt6.QtWidgets import QTableView, QAbstractItemView, QSizePolicy, QHeaderView
+from PyQt6.QtWidgets import QTableView, QAbstractItemView, QSizePolicy, QHeaderView, QDialog, QMessageBox
 
 from data import PlaneBase, OtkazAgregateBase
+from forms.otkaz_dialog import EditOtkazDialog
 
 
 class IspravnostTableModel(QAbstractTableModel):
-    def __init__(self, data, headers=None, parent=None):
+    def __init__(self, data, parent=None):
         super().__init__(parent)
         self._data = data
-        self._headers = headers or []
+        self._headers = ["Наименование", "Система", "Номер агрегата/блока", "Примечание"]
         self._prepared_data = []
         self._group_rows = []
         self._group_values = []
+        self._items_ids = []
+        self._row_type = []
 
     def load_data(self, data):
         """Загружает данные из запроса Peewee"""
@@ -20,6 +23,9 @@ class IspravnostTableModel(QAbstractTableModel):
         self._prepared_data = []
         self._group_rows = []
         self._group_values = []
+        self._items_ids = []
+        self._row_type = []
+
         # Сортируем по категории
         sorted_data = sorted(data, key=lambda x: str(x.agregate.system.name))
 
@@ -35,12 +41,16 @@ class IspravnostTableModel(QAbstractTableModel):
                 self._prepared_data.append([''] * (len(self._headers)))
                 self._group_rows.append(row_idx)
                 self._group_values.append(group_value)
+                self._items_ids.append(None)
+                self._row_type.append('group')
                 row_idx += 1
                 current_group = group_value
 
             # Добавляем обычную строку данных
             row_data = [item.agregate.name, item.agregate.system.name, item.number, '']
             self._prepared_data.append(row_data)
+            self._items_ids.append(item.id)
+            self._row_type.append('agregate')
             row_idx += 1
 
         self.endResetModel()
@@ -88,13 +98,23 @@ class IspravnostTableModel(QAbstractTableModel):
 
         return None
 
+    def get_item_id(self, row):
+        if 0 <= row < len(self._items_ids):
+            return self._items_ids[row]
+        return None
+
+    def get_row_type(self, row):
+        if 0 <= row < len(self._row_type):
+            return self._row_type[row]
+        return None
+
     def headerData(self, section, orientation, role=Qt.ItemDataRole.DisplayRole):
         if role == Qt.ItemDataRole.DisplayRole:
             if orientation == Qt.Orientation.Horizontal:
                 return self._headers[section]
         return None
 
-    def isGroupRow(self, row):
+    def is_group_row(self, row):
         return row in self._group_rows
 
 
@@ -110,6 +130,14 @@ class IspravnostTableView(QTableView):
         model = self.model()
         if isinstance(model, IspravnostTableModel):
             for row in range(model.rowCount()):
-                if model.isGroupRow(row):
+                if model.is_group_row(row):
                     self.setSpan(row, 0, 1, model.columnCount())
 
+    def edit_item(self, item_id):
+        try:
+            item = OtkazAgregateBase.get(OtkazAgregateBase.id == item_id)
+            dialog = EditOtkazDialog(item)
+            dialog.exec()
+
+        except OtkazAgregateBase.DoesNotExist:
+            QMessageBox.warning(self, "Ошибка", "Блок/агрегат не найден!")

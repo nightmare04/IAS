@@ -45,8 +45,7 @@ class PlaneIspravnost(QDialog):
              }
          """)
 
-        headers = ["Наименование", "Система", "Номер агрегата/блока", "Примечание"]
-        self.model = IspravnostTableModel(headers=headers, data=OtkazAgregateBase.select().where(id == self.plane.id))
+        self.model = IspravnostTableModel(data=OtkazAgregateBase.select().where(id == self.plane.id))
         self.table_view = IspravnostTableView()
         self.table_view.setModel(self.model)
         self.setup_ui()
@@ -63,8 +62,14 @@ class PlaneIspravnost(QDialog):
     def refresh_data(self):
         self.load_data()
 
-    def on_double_click(self):
-        pass
+    def on_double_click(self, index):
+        model = self.table_view.model()
+        if isinstance(model, IspravnostTableModel):
+            row = index.row()
+            item_id = model.get_item_id(row)
+            if item_id:
+                self.table_view.edit_item(item_id)
+        self.load_data()
 
     def setup_ui(self):
         self.main_layout.addWidget(self.control_panel)

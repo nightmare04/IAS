@@ -40,12 +40,15 @@ class AddOtkazDialog(QDialog):
 
         layout.addLayout(form_layout)
 
-        self.button_box = QDialogButtonBox(
-            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
-        )
+        # self.button_box = QDialogButtonBox(
+        #     QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        # )
+        self.button_box = QDialogButtonBox()
+        save_button = self.button_box.addButton("Сохранить", QDialogButtonBox.ButtonRole.AcceptRole)
+        cancel_button = self.button_box.addButton("Отмена", QDialogButtonBox.ButtonRole.RejectRole)
 
-        self.button_box.accepted.connect(self.accept_and_save)
-        self.button_box.rejected.connect(self.reject)
+        save_button.clicked.connect(self.accept_and_save)
+        cancel_button.clicked.connect(self.reject)
 
         layout.addWidget(self.button_box)
         self.setLayout(layout)
@@ -82,9 +85,12 @@ class AddOtkazDialog(QDialog):
 
 class EditOtkazDialog(AddOtkazDialog):
     def __init__(self, otkaz_agregate: OtkazAgregateBase, parent=None):
-        super().__init__(parent)
+
+        super().__init__(otkaz_agregate.plane, parent)
         self.otkaz_agregate = otkaz_agregate
-        self.setWindowTitle('Редактирование отказавшего блока/агрегата')
+        self.setWindowTitle('Изменить')
+        delete_button = self.button_box.addButton("Удалить", QDialogButtonBox.ButtonRole.DestructiveRole)
+        delete_button.clicked.connect(self.delete_item)
         self.load_data()
 
     def load_data(self):
@@ -92,3 +98,13 @@ class EditOtkazDialog(AddOtkazDialog):
         self.system_combo.setCurrentText(self.otkaz_agregate.agregate.system.name)
         self.agregate_number.setText(self.otkaz_agregate.number)
         self.desc.setText(self.otkaz_agregate.description)
+
+    def delete_item(self):
+        try:
+            item = self.otkaz_agregate
+            item.delete_instance()
+
+            self.accept()
+
+        except Exception as e:
+            QMessageBox.warning(self, "Ошибка", f"Не удалось удалить агрегат/блок: {str(e)}")
