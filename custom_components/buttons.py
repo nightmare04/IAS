@@ -1,8 +1,7 @@
 from PyQt6.QtCore import QSize
 from PyQt6.QtWidgets import QPushButton
 
-from data import PlaneBase, OtkazAgregateBase
-from forms import PlaneIspravnost
+from data.models import PlaneBase, OtkazAgregateBase
 
 
 class IASButton(QPushButton):
@@ -34,6 +33,9 @@ class PlaneBtn(QPushButton):
         self.update_color()
 
     def open_dialog(self):
+        # local import to avoid circular import: forms.plane_ispravnost imports tables which may import buttons
+        from forms.plane_ispravnost import PlaneIspravnost
+
         dialog = PlaneIspravnost(self.plane)
         dialog.exec()
         self.update_color()

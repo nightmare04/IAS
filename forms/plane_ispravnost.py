@@ -1,9 +1,9 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QWidget, QHBoxLayout, QComboBox, QPushButton, QLabel, QMessageBox
 
-from data import PlaneBase, GroupBase, OtkazAgregateBase, AgregateBase, PlaneSystemBase
-from forms import AddOtkazDialog, EditOtkazDialog
-from forms.custom_components import IspravnostTableModel, IspravnostTableView
+from custom_components.tables import IspravnostTableModel, IspravnostTableView
+from data.models import PlaneBase, GroupBase, OtkazAgregateBase, AgregateBase, PlaneSystemBase
+from forms.otkaz_dialog import AddOtkazDialog, EditOtkazDialog
 
 
 class PlaneIspravnost(QDialog):

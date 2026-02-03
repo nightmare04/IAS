@@ -2,7 +2,7 @@ import sys
 from PyQt6.QtWidgets import QApplication
 
 from data import init_table
-from forms import MainForm
+from forms.main_form import MainForm
 
 
 def init_app():

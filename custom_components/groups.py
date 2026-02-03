@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QGroupBox, QGridLayout
 
-from data import PodrazdBase, PlaneBase
-from forms.custom_components import PlaneBtn
+from custom_components.buttons import PlaneBtn
+from data.models import PodrazdBase, PlaneBase
 
 
 class PodrGroup(QGroupBox):

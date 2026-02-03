@@ -3,9 +3,9 @@ from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
 )
 
-from forms import SettingsPlaneType, SettingsPodrazd, SettingsSpec, SettingsGroup
-from forms.custom_components import IASButton
-from forms.frames import IspravnostFrame
+from custom_components.buttons import IASButton
+from forms.settings import SettingsPlaneType, SettingsSpec, SettingsPodrazd, SettingsGroup
+from frames.ispravnost import IspravnostFrame
 
 
 class MainForm(QMainWindow):

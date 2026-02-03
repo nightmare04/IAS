@@ -1,7 +1,7 @@
 
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QFormLayout, QLineEdit, QComboBox, QDialogButtonBox, QMessageBox
 
-from data import GroupBase, PlaneBase, PlaneSystemBase, OtkazAgregateBase, AgregateBase
+from data.models import PlaneBase, GroupBase, PlaneSystemBase, AgregateBase, OtkazAgregateBase
 
 
 class AddOtkazDialog(QDialog):

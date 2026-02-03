@@ -2,8 +2,7 @@ from PyQt6.QtCore import Qt, QModelIndex, QAbstractTableModel
 from PyQt6.QtGui import QBrush, QColor, QFont, QAction
 from PyQt6.QtWidgets import QTableView, QAbstractItemView, QSizePolicy, QHeaderView, QMessageBox, QMenu
 
-from data import OtkazAgregateBase, PlaneTypeBase, PodrazdBase, SpecBase, GroupBase
-from forms import EditOtkazDialog, AddPlaneType
+from data.models import OtkazAgregateBase, PlaneTypeBase, PodrazdBase, SpecBase, GroupBase
 
 
 class IspravnostTableModel(QAbstractTableModel):
@@ -163,6 +162,9 @@ class IspravnostTableView(QTableView):
 
     def edit_item(self, item_id):
         try:
+            # local import to avoid circular dependency with forms.otkaz_dialog
+            from forms.otkaz_dialog import EditOtkazDialog
+
             item = OtkazAgregateBase.get_by_id(item_id)
             dialog = EditOtkazDialog(item)
             dialog.exec()
@@ -271,16 +273,26 @@ class PlanesTypesModel(UnTableModel):
 class PlaneTypesTable(UnTableView):
     def __init__(self, parent=None):
         super().__init__(parent)
-
     def edit_item(self, item_id):
-        dialog = AddPlaneType(data = item_id)
+        # local import to avoid circular dependency with forms.settings
+        from forms.settings import AddPlaneType
+
+        dialog = AddPlaneType(data=item_id, parent=self.parent)
         dialog.exec()
-        self.parent.refresh_data()
+        if hasattr(self.parent, 'refresh_data') and callable(self.parent.refresh_data):
+            try:
+                self.parent.refresh_data()
+            except Exception:
+                pass
 
     def delete_item(self, item_id):
         item = PlaneTypeBase.get_by_id(item_id)
         item.delete_instance()
-        self.parent.refresh_data()
+        if hasattr(self.parent, 'refresh_data') and callable(self.parent.refresh_data):
+            try:
+                self.parent.refresh_data()
+            except Exception:
+                pass
 
 class PodrazdModel(UnTableModel):
     def __init__(self, parent=None):

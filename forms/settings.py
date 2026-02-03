@@ -1,8 +1,8 @@
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QPushButton, QHBoxLayout, QFormLayout, QLineEdit
 
-from data import PlaneTypeBase
-from forms.custom_components import PlaneTypesTable, PlanesTypesModel, PodrazdTable, PodrazdModel, SpecTable, SpecModel, \
-    GroupTable, GroupModel
+from custom_components.tables import PlaneTypesTable, PlanesTypesModel, PodrazdTable, PodrazdModel, SpecTable, \
+    SpecModel, GroupTable, GroupModel
+from data.models import PlaneTypeBase
 
 
 class UnDialog(QDialog):
