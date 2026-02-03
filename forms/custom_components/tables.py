@@ -1,8 +1,8 @@
 from PyQt6.QtCore import Qt, QModelIndex, QAbstractTableModel
-from PyQt6.QtGui import QBrush, QColor, QFont
-from PyQt6.QtWidgets import QTableView, QAbstractItemView, QSizePolicy, QHeaderView, QDialog, QMessageBox
+from PyQt6.QtGui import QBrush, QColor, QFont, QAction
+from PyQt6.QtWidgets import QTableView, QAbstractItemView, QSizePolicy, QHeaderView, QMessageBox, QMenu
 
-from data import PlaneBase, OtkazAgregateBase
+from data import  OtkazAgregateBase
 from forms.otkaz_dialog import EditOtkazDialog
 
 
@@ -38,16 +38,15 @@ class IspravnostTableModel(QAbstractTableModel):
             # Если началась новая группа
             if group_value != current_group:
                 # Добавляем строку группы
-                self._prepared_data.append([''] * (len(self._headers)))
+                self._prepared_data.append([group_value] * (len(self._headers)))
                 self._group_rows.append(row_idx)
-                self._group_values.append(group_value)
                 self._items_ids.append(None)
                 self._row_type.append('group')
                 row_idx += 1
                 current_group = group_value
 
             # Добавляем обычную строку данных
-            row_data = [item.agregate.name, item.agregate.system.name, item.number, '']
+            row_data = [item.agregate.name, item.agregate.system.name, item.number, item.description]
             self._prepared_data.append(row_data)
             self._items_ids.append(item.id)
             self._row_type.append('agregate')
@@ -70,14 +69,8 @@ class IspravnostTableModel(QAbstractTableModel):
 
         if 0 <= row < len(self._prepared_data) and 0 <= col < len(self._headers):
             if role == Qt.ItemDataRole.DisplayRole:
-                if row in self._group_rows:
-                    if col == 0:
-                        group_index = self._group_rows.index(row)
-                        return self._group_values[group_index]
-                    return ""
-                else:
-                    value = self._prepared_data[row][col]
-                    return str(value) if value is not None else ""
+                value = self._prepared_data[row][col]
+                return str(value) if value is not None else ""
 
             elif role == Qt.ItemDataRole.FontRole and row in self._group_rows:
                 font = QFont()
@@ -85,8 +78,10 @@ class IspravnostTableModel(QAbstractTableModel):
                 font.setPointSize(10)
                 return font
 
-            elif role == Qt.ItemDataRole.BackgroundRole and self._row_type[row] == 'group':
-                return QBrush(QColor(220, 220, 220))
+            elif role == Qt.ItemDataRole.BackgroundRole:
+                if self._row_type[row] == 'group':
+                    return QBrush(QColor(220, 220, 220))
+                return QBrush(QColor(255, 255, 255))
 
             elif role == Qt.ItemDataRole.TextAlignmentRole and row in self._group_rows:
                 if col == 0:
@@ -94,7 +89,7 @@ class IspravnostTableModel(QAbstractTableModel):
                 return Qt.AlignmentFlag.AlignCenter
 
             elif role == Qt.ItemDataRole.ForegroundRole and row in self._group_rows:
-                return QBrush(QColor(0, 0, 139))  # Темно-синий цвет для групп
+                return QBrush(QColor(0, 0, 139))
 
         return None
 
@@ -125,6 +120,30 @@ class IspravnostTableView(QTableView):
         self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding))
         self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.show_context_menu)
+
+    def show_context_menu(self, position):
+        index = self.indexAt(position)
+        model = self.model()
+
+        menu = QMenu(self)
+
+        if index.isValid() and isinstance(model, IspravnostTableModel):
+            row = index.row()
+            row_type = model.get_row_type(row)
+            item_id = model.get_item_id(row)
+
+            if row_type == 'agregate' and item_id:
+                edit_action = QAction("✏️ Изменить", self)
+                edit_action.triggered.connect(lambda: self.edit_item(item_id))
+                menu.addAction(edit_action)
+
+                delete_action = QAction("🗑️ Удалить", self)
+                delete_action.triggered.connect(lambda: self.delete_item(item_id))
+                menu.addAction(delete_action)
+
+        menu.exec(self.viewport().mapToGlobal(position))
 
     def set_span_for_groups(self):
         self.clear_all_span()
@@ -145,9 +164,16 @@ class IspravnostTableView(QTableView):
 
     def edit_item(self, item_id):
         try:
-            item = OtkazAgregateBase.get(OtkazAgregateBase.id == item_id)
+            item = OtkazAgregateBase.get_by_id(item_id)
             dialog = EditOtkazDialog(item)
             dialog.exec()
 
         except OtkazAgregateBase.DoesNotExist:
             QMessageBox.warning(self, "Ошибка", "Блок/агрегат не найден!")
+
+    def delete_item(self, item_id):
+        parent = self.parent()
+        item = OtkazAgregateBase.get_by_id(item_id)
+        item.delete_instance()
+        parent.refresh_data()
+

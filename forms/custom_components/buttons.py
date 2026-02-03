@@ -1,7 +1,7 @@
 from PyQt6.QtCore import QSize
-from PyQt6.QtWidgets import QPushButton, QDialog
+from PyQt6.QtWidgets import QPushButton
 
-from data import PlaneBase
+from data import PlaneBase, OtkazAgregateBase
 from forms.plane_ispravnost import PlaneIspravnost
 
 
@@ -30,10 +30,16 @@ class PlaneBtn(QPushButton):
         super().__init__(self.plane.bort_number, parent)
         self.setFixedSize(QSize(60, 40))
         self.setCheckable(False)
-        self.setStyleSheet("PlaneBtn{background-color: red;}"
-                           "PlaneBtn:checked{background-color: green;}")
         self.clicked.connect(self.open_dialog)
+        self.update_color()
 
     def open_dialog(self):
         dialog = PlaneIspravnost(self.plane)
         dialog.exec()
+        self.update_color()
+
+    def update_color(self):
+        if len(OtkazAgregateBase.select().where(OtkazAgregateBase.plane == self.plane)) > 0:
+            self.setStyleSheet("PlaneBtn{background-color: red;}")
+            return
+        self.setStyleSheet("PlaneBtn{background-color: green;}")

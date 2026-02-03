@@ -1,5 +1,6 @@
-from PyQt6.QtWidgets import QFrame, QGridLayout
+from PyQt6.QtWidgets import QFrame, QGridLayout, QAbstractItemView
 from data.models import PodrazdBase
+from forms.custom_components.buttons import PlaneBtn
 from forms.custom_components.groups import PodrGroup
 
 
@@ -30,3 +31,7 @@ class IspravnostFrame(QFrame):
                 sublayout = item.layout()
                 if sublayout is not None:
                     self.clear_layout(sublayout)
+
+    def update_ispravnost(self):
+        for plane_bnt in self.findChildren(PlaneBtn):
+            plane_bnt.update_color()

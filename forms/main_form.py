@@ -1,7 +1,6 @@
 from PyQt6.QtGui import QAction
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QFrame,
 )
 from .custom_components import IASButton
 from .frames.ispravnost import IspravnostFrame
