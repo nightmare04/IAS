@@ -35,7 +35,7 @@ class PlaneIspravnost(QDialog):
         self.control_layout.addWidget(self.add_btn)
 
         self.status_label = QLabel("Загрузка данных...")
-        self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.status_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.status_label.setStyleSheet("""
              QLabel {
                  background-color: #f0f0f0;
@@ -58,10 +58,13 @@ class PlaneIspravnost(QDialog):
         dialog = AddOtkazDialog(self.plane)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             self.refresh_data()
-            self.table_view.model().modelReset
+
 
     def refresh_data(self):
         self.load_data()
+
+    def update_status(self, query):
+        self.status_label.setText(f'Загружено {len(query)} блоков и агрегатов.')
 
     def on_double_click(self, index):
         model = self.table_view.model()
@@ -102,7 +105,7 @@ class PlaneIspravnost(QDialog):
 
             self.model.load_data(query)
             self.table_view.set_span_for_groups()
-
+            self.update_status(query)
         except Exception as e:
             QMessageBox.warning(self, "Ошибка", f"Ошибка при загрузке данных: {str(e)}")
 
