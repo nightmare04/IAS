@@ -1,9 +1,44 @@
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QWidget, QHBoxLayout, QComboBox, QPushButton, QLabel, QMessageBox
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QWidget, QHBoxLayout, QComboBox, QPushButton, QLabel, QMessageBox, \
+    QFrame, QGridLayout
 
+from custom_components.buttons import PlaneBtn
+from custom_components.groups import PodrGroup
 from custom_components.tables import IspravnostTableModel, IspravnostTableView
-from data.models import PlaneBase, GroupBase, OtkazAgregateBase, AgregateBase, PlaneSystemBase
+from data.data_models import PlaneBase, GroupBase, OtkazAgregateBase, AgregateBase, PlaneSystemBase, PodrazdBase
 from forms.otkaz_dialog import AddOtkazDialog, EditOtkazDialog
+
+class IspravnostFrame(QFrame):
+    def __init__(self):
+        super().__init__()
+        self.load_condition()
+
+    def load_condition(self):
+        podr_data = PodrazdBase.select()
+        podr_layout = QGridLayout()
+        for i, podr in enumerate(podr_data):
+            group = PodrGroup(podr)
+            group.load_planes()
+            row = i // 2
+            col = i % 2
+            podr_layout.addWidget(group, row, col)
+        self.setLayout(podr_layout)
+
+    def clear_layout(self, layout):
+        while layout.count():
+            item = layout.takeAt(0)
+            widget = item.widget()
+
+            if widget is not None:
+                widget.deleteLater()
+            else:
+                sublayout = item.layout()
+                if sublayout is not None:
+                    self.clear_layout(sublayout)
+
+    def update_ispravnost(self):
+        for plane_bnt in self.findChildren(PlaneBtn):
+            plane_bnt.update_color()
 
 
 class PlaneIspravnost(QDialog):

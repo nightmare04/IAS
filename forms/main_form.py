@@ -4,8 +4,8 @@ from PyQt6.QtWidgets import (
 )
 
 from custom_components.buttons import IASButton
+from forms.plane_ispravnost import IspravnostFrame
 from forms.settings import SettingsPlaneType, SettingsSpec, SettingsPodrazd, SettingsGroup
-from frames.ispravnost import IspravnostFrame
 
 
 class MainForm(QMainWindow):

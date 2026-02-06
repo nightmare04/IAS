@@ -1,8 +1,9 @@
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QPushButton, QHBoxLayout, QFormLayout, QLineEdit
 
-from custom_components.tables import PlaneTypesTable, PlanesTypesModel, PodrazdTable, PodrazdModel, SpecTable, \
-    SpecModel, GroupTable, GroupModel
-from data.models import PlaneTypeBase
+from custom_components.tables_models import PlanesTypesModel, PodrazdModel, SpecModel, GroupModel
+from custom_components.tables import PlaneTypesTable, PodrazdTable, SpecTable, \
+     GroupTable
+from data.data_models import PlaneTypeBase, PodrazdBase
 
 
 class UnDialog(QDialog):
@@ -52,15 +53,31 @@ class SettingsPodrazd(UnDialog):
         self._model.load_data()
         self.main_layout.insertWidget(0, self._table)
 
+    def add_item(self):
+        dialog = AddPodrazd()
+        dialog.exec()
+        self._model.load_data()
+
+    def refresh_data(self):
+        self._model.load_data()
+
 class SettingsSpec(UnDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Подразделения")
+        self.setWindowTitle("Специальности")
         self._table = SpecTable(self)
         self._model = SpecModel(self)
         self._table.setModel(self._model)
         self._model.load_data()
         self.main_layout.insertWidget(0, self._table)
+
+    def add_item(self):
+        dialog = AddSpec()
+        dialog.exec()
+        self._model.load_data()
+
+    def refresh_data(self):
+        self._model.load_data()
 
 class SettingsGroup(UnDialog):
     def __init__(self, parent=None):
@@ -71,6 +88,14 @@ class SettingsGroup(UnDialog):
         self._table.setModel(self._model)
         self._model.load_data()
         self.main_layout.insertWidget(0, self._table)
+
+    def add_item(self):
+        dialog = AddGroup()
+        dialog.exec()
+        self._model.load_data()
+
+    def refresh_data(self):
+        self._model.load_data()
 
 class UnAddEditDialog(QDialog):
     def __init__(self, data=None, parent=None):
@@ -122,5 +147,29 @@ class AddPlaneType(UnAddEditDialog):
             self.item.name = self.plane_type.text()
             self.item.save()
             self.accept()
-        PlaneTypeBase.create(name=self.plane_type.text())
-        self.accept()
+        else:
+            PlaneTypeBase.create(name=self.plane_type.text())
+            self.accept()
+
+class AddPodrazd(UnAddEditDialog):
+    def __init__(self, data=None, parent=None):
+        super().__init__(data, parent)
+        if self._data:
+            self.item = PodrazdBase.get_by_id(data)
+        self.podrazd = QLineEdit()
+        self.config_ui()
+
+    def config_ui(self):
+        self.setWindowTitle('Подразделение')
+        self.form_layout.addRow('Название подразделения:', self.podrazd)
+        if self._data:
+            self.podrazd.setText(self.item.name)
+
+    def add_item(self):
+        if self._data:
+            self.item.name = self.podrazd.text()
+            self.item.save()
+            self.accept()
+        else:
+            PodrazdBase.create(name=self.podrazd.text())
+            self.accept()
