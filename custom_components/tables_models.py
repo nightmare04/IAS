@@ -1,7 +1,7 @@
 from PyQt6.QtCore import QAbstractTableModel, QModelIndex, Qt
 from PyQt6.QtGui import QFont, QBrush, QColor
 
-from data.data_models import PlaneTypeBase, PodrazdBase, SpecBase, GroupBase
+from data.data_models import PlaneTypeBase, PodrazdBase, SpecBase, GroupBase, OtkazAgregateBase
 
 
 class IspravnostTableModel(QAbstractTableModel):
@@ -109,6 +109,10 @@ class IspravnostTableModel(QAbstractTableModel):
 
     def is_group_row(self, row):
         return row in self._group_rows
+
+    def delete_item(self, item_id):
+        item = OtkazAgregateBase.get_by_id(item_id)
+        item.delete_instance()
 
 class UnTableModel(QAbstractTableModel):
     def __init__(self, parent=None):

@@ -96,10 +96,8 @@ class IspravnostTableView(UnTableView):
             QMessageBox.warning(self, "Ошибка", "Блок/агрегат не найден!")
 
     def delete_item(self, item_id):
-        parent = self.parent
-        item = OtkazAgregateBase.get_by_id(item_id)
-        item.delete_instance()
-        parent.refresh_data()
+        self.model().delete_item(item_id)
+        self.parent.refresh_data()
 
 class PlaneTypesTable(UnTableView):
     def __init__(self, parent=None):
