@@ -6,7 +6,6 @@ from custom_components.tables_models import IspravnostTableModel, UnTableModel
 from data.data_models import OtkazAgregateBase
 from forms.otkaz_dialog import EditOtkazDialog
 
-
 class UnTableView(QTableView):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -103,8 +102,8 @@ class IspravnostTableView(UnTableView):
 class PlaneTypesTable(UnTableView):
     def __init__(self, parent=None):
         super().__init__(parent)
+
     def edit_item(self, item_id):
-        # local import to avoid circular dependency with forms.settings
         from forms.settings import AddPlaneType
 
         dialog = AddPlaneType(data=item_id, parent=self.parent)
@@ -129,8 +128,14 @@ class PodrazdTable(UnTableView):
         super().__init__(parent)
 
     def delete_item(self, item_id):
-        item = PodrazdBase.get_by_id(item_id)
-        item.delete_instance()
+        self.model().delete_item(item_id)
+        self.parent.refresh_data()
+
+    def edit_item(self, item_id):
+        from forms.settings import AddPodrazd
+
+        dialog = AddPodrazd(data=item_id, parent=self.parent)
+        dialog.exec()
         if hasattr(self.parent, 'refresh_data') and callable(self.parent.refresh_data):
             try:
                 self.parent.refresh_data()
@@ -141,6 +146,39 @@ class SpecTable(UnTableView):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+    def delete_item(self, item_id):
+        self.model().delete_item(item_id)
+        self.parent.refresh_data()
+
+    def edit_item(self, item_id):
+        from forms.settings import AddPodrazd
+
+        dialog = AddPodrazd(data=item_id, parent=self.parent)
+        dialog.exec()
+        if hasattr(self.parent, 'refresh_data') and callable(self.parent.refresh_data):
+            try:
+                self.parent.refresh_data()
+            except Exception:
+                pass
+
+
 class GroupTable(UnTableView):
     def __init__(self, parent=None):
         super().__init__(parent)
+
+    def delete_item(self, item_id):
+        self.model().delete_item(item_id)
+        self.parent.refresh_data()
+
+    def edit_item(self, item_id):
+        from forms.settings import AddGroup
+
+        dialog = AddGroup(data=item_id, parent=self.parent)
+        dialog.exec()
+        if hasattr(self.parent, 'refresh_data') and callable(self.parent.refresh_data):
+            try:
+                self.parent.refresh_data()
+            except Exception:
+                pass
+
+

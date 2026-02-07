@@ -1,9 +1,9 @@
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QPushButton, QHBoxLayout, QFormLayout, QLineEdit
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QPushButton, QHBoxLayout, QFormLayout, QLineEdit, QComboBox
 
 from custom_components.tables_models import PlanesTypesModel, PodrazdModel, SpecModel, GroupModel
 from custom_components.tables import PlaneTypesTable, PodrazdTable, SpecTable, \
      GroupTable
-from data.data_models import PlaneTypeBase, PodrazdBase
+from data.data_models import PlaneTypeBase, PodrazdBase, SpecBase, GroupBase
 
 
 class UnDialog(QDialog):
@@ -25,6 +25,7 @@ class UnDialog(QDialog):
     def add_item(self):
         pass
 
+
 class SettingsPlaneType(UnDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -42,6 +43,7 @@ class SettingsPlaneType(UnDialog):
 
     def refresh_data(self):
         self._model.load_data()
+
 
 class SettingsPodrazd(UnDialog):
     def __init__(self, parent=None):
@@ -61,6 +63,7 @@ class SettingsPodrazd(UnDialog):
     def refresh_data(self):
         self._model.load_data()
 
+
 class SettingsSpec(UnDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -79,6 +82,7 @@ class SettingsSpec(UnDialog):
     def refresh_data(self):
         self._model.load_data()
 
+
 class SettingsGroup(UnDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -96,6 +100,7 @@ class SettingsGroup(UnDialog):
 
     def refresh_data(self):
         self._model.load_data()
+
 
 class UnAddEditDialog(QDialog):
     def __init__(self, data=None, parent=None):
@@ -125,8 +130,10 @@ class UnAddEditDialog(QDialog):
 
     def add_item(self):
         pass
+
     def config_ui(self):
         pass
+
 
 class AddPlaneType(UnAddEditDialog):
     def __init__(self, data=None, parent=None):
@@ -151,6 +158,7 @@ class AddPlaneType(UnAddEditDialog):
             PlaneTypeBase.create(name=self.plane_type.text())
             self.accept()
 
+
 class AddPodrazd(UnAddEditDialog):
     def __init__(self, data=None, parent=None):
         super().__init__(data, parent)
@@ -173,3 +181,44 @@ class AddPodrazd(UnAddEditDialog):
         else:
             PodrazdBase.create(name=self.podrazd.text())
             self.accept()
+
+
+class AddSpec(UnAddEditDialog):
+    def __init__(self, data=None, parent=None):
+        super().__init__(data, parent)
+        if self._data:
+            self.item = SpecBase.get_by_id(data)
+        self.spec = QLineEdit()
+        self.config_ui()
+
+    def config_ui(self):
+        self.setWindowTitle("Специальности")
+        self.form_layout.addRow('Название специальности', self.spec)
+        if self._data:
+            self.spec.setText(self.item.name)
+
+    def add_item(self):
+        if self._data:
+            self.item.name = self.spec.text()
+            self.item.save()
+            self.accept()
+        else:
+            SpecBase.create(name=self.spec.text())
+            self.accept()
+
+
+class AddGroup(UnAddEditDialog):
+    def __init__(self, data=None, parent=None):
+        super().__init__(data, parent)
+        if self._data:
+            self.item = GroupBase.get_by_id(data)
+        self.type_combo = QComboBox()
+        self.spec_combo = QComboBox()
+        self.group = QLineEdit()
+        self.config_ui()
+
+    def config_ui(self):
+        self.setWindowTitle("Группы обслуживания")
+        self.form_layout.addRow('Название группы', self.spec)
+        if self._data:
+            self.spec.setText(self.item.name)

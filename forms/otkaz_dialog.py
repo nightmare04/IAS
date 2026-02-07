@@ -31,7 +31,6 @@ class AddOtkazDialog(QDialog):
         self.agregate_number = QLineEdit()
         self.desc = QLineEdit()
 
-
         form_layout.addRow("Группа обслуживания:", self.group_combo)
         form_layout.addRow("Система самолета:", self.system_combo)
         form_layout.addRow("Агрегат/блок:", self.agregate_combo)
@@ -61,8 +60,6 @@ class AddOtkazDialog(QDialog):
         agregate_list = AgregateBase.select().where(AgregateBase.system == self.system_combo.currentData())
         for agregate in agregate_list:
             self.agregate_combo.addItem(agregate.name, agregate.id)
-
-
 
     def create_item(self):
         try:
@@ -108,7 +105,6 @@ class EditOtkazDialog(AddOtkazDialog):
 
         except Exception as e:
             QMessageBox.warning(self, "Ошибка", f"Не удалось сохранить агрегат/блок: {str(e)}")
-
 
     def delete_item(self):
         try:

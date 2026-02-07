@@ -114,12 +114,14 @@ class IspravnostTableModel(QAbstractTableModel):
         item = OtkazAgregateBase.get_by_id(item_id)
         item.delete_instance()
 
+
 class UnTableModel(QAbstractTableModel):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._data = []
         self._headers = []
         self._items_ids = []
+
     def load_data(self):
         """Method for data loading."""
         pass
@@ -157,6 +159,7 @@ class UnTableModel(QAbstractTableModel):
         self._data = []
         self._items_ids = []
 
+
 class PlanesTypesModel(UnTableModel):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -171,8 +174,11 @@ class PlanesTypesModel(UnTableModel):
             self._items_ids.append([data.id])
         self.endResetModel()
 
-    def edit_item(self, row):
-        self.beginResetModel()
+    @staticmethod
+    def delete_item(item_id):
+        item = PlaneTypeBase.get_by_id(item_id)
+        item.delete_instance()
+
 
 class PodrazdModel(UnTableModel):
     def __init__(self, parent=None):
@@ -188,6 +194,12 @@ class PodrazdModel(UnTableModel):
             self._items_ids.append([data.id])
         self.endResetModel()
 
+    @staticmethod
+    def delete_item(item_id):
+        item = PodrazdBase.get_by_id(item_id)
+        item.delete_instance()
+
+
 class SpecModel(UnTableModel):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -202,6 +214,11 @@ class SpecModel(UnTableModel):
             self._items_ids.append([data.id])
         self.endResetModel()
 
+    @staticmethod
+    def delete_item(item_id):
+        item = SpecBase.get_by_id(item_id)
+        item.delete_instance()
+
 class GroupModel(UnTableModel):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -215,3 +232,8 @@ class GroupModel(UnTableModel):
             self._data.append([data.name, data.spec.name, data.plane_type.name])
             self._items_ids.append([data.id])
         self.endResetModel()
+
+    @staticmethod
+    def delete_item(item_id):
+        item = GroupBase.get_by_id(item_id)
+        item.delete_instance()
