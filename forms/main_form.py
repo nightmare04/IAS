@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import (
 
 from custom_components.buttons import IASButton
 from forms.plane_ispravnost import IspravnostFrame
-from forms.settings import SettingsPlaneType, SettingsPodrazd, SettingsGroup
+from forms.settings import SettingsPlaneType, SettingsPodrazd, SettingsGroup, SettingsAgregate
 
 
 class MainForm(QMainWindow):
@@ -21,6 +21,7 @@ class MainForm(QMainWindow):
         group_action = QAction('Группы обслуживания', self)
         group_action.triggered.connect(self.group_dialog)
         agreg_action = QAction('Системы/агрегаты', self)
+        agreg_action.triggered.connect(self.agregate_dialog)
 
         settings_menu.addAction(type_action)
         settings_menu.addAction(podr_action)
@@ -51,6 +52,10 @@ class MainForm(QMainWindow):
 
     def group_dialog(self):
         dialog = SettingsGroup()
+        dialog.exec()
+
+    def agregate_dialog(self):
+        dialog = SettingsAgregate()
         dialog.exec()
 
     def create_button_panel(self) -> QWidget:

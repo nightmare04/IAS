@@ -1,10 +1,10 @@
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QPushButton, QHBoxLayout, QFormLayout, QLineEdit, QComboBox
 
-from custom_components.combo_box import PlaneTypeComboBox
-from custom_components.tables_models import PlanesTypesModel, PodrazdModel, GroupModel
+from custom_components.combo_box import PlaneTypeComboBox, SystemComboBox, GroupComboBox
+from custom_components.tables_models import PlanesTypesModel, PodrazdModel, GroupModel, AgregateModel
 from custom_components.tables import PlaneTypesTable, PodrazdTable, \
-     GroupTable
-from data.data_models import PlaneTypeBase, PodrazdBase, GroupBase
+     GroupTable, AgregateTable
+from data.data_models import PlaneTypeBase, PodrazdBase, GroupBase, AgregateBase, PlaneSystemBase
 
 
 class UnDialog(QDialog):
@@ -81,6 +81,53 @@ class SettingsGroup(UnDialog):
         self._model.load_data()
 
     def refresh_data(self):
+        self._model.load_data()
+
+
+class SettingsAgregate(UnDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Блоки/Агрегаты")
+        self._table = AgregateTable(self)
+        self._model = AgregateModel(self)
+        self._table.setModel(self._model)
+        self._model.load_data()
+        self.plane_type_combo = PlaneTypeComboBox()
+        self.group_combo = GroupComboBox()
+        self.system_combo = SystemComboBox()
+        self.plane_type_combo.currentTextChanged.connect(
+            lambda x: self.group_combo.load_data(self.plane_type_combo.currentData())
+        )
+        self.plane_type_combo.currentTextChanged.connect(
+            lambda x: self._model.load_data(filter_type=self.plane_type_combo.currentData())
+        )
+        self.group_combo.currentTextChanged.connect(
+            lambda x: self.system_combo.load_data(self.group_combo.currentData())
+        )
+        self.group_combo.currentTextChanged.connect(
+            lambda x: self._model.load_data(filter_group=self.group_combo.currentData())
+        )
+        self.system_combo.currentTextChanged.connect(
+            lambda x: self._model.load_data(filter_system=self.system_combo.currentData())
+        )
+        self.main_layout.insertWidget(0, self.plane_type_combo)
+        self.main_layout.insertWidget(1, self.group_combo)
+        self.main_layout.insertWidget(2, self.system_combo)
+        self.main_layout.insertWidget(3, self._table)
+
+    def add_item(self):
+        if self.system_combo.currentData():
+            system = self.system_combo.currentData()
+            dialog = AddAgregate(system=system)
+        elif self.group_combo.currentData():
+            group = self.group_combo.currentData()
+            dialog = AddAgregate(group=group)
+        elif self.plane_type_combo.currentData():
+            plane_type = self.plane_type_combo.currentData()
+            dialog = AddAgregate(plane_type=plane_type)
+        else:
+            dialog = AddAgregate()
+        dialog.exec()
         self._model.load_data()
 
 
@@ -190,4 +237,57 @@ class AddGroup(UnAddEditDialog):
             self.accept()
         else:
             GroupBase.create(name=self.group.text(), plane_type=self.type_combo.currentData())
+            self.accept()
+
+
+class AddAgregate(UnAddEditDialog):
+    def __init__(self, data=None, plane_type=None, group=None, system=None, parent=None):
+        super().__init__(data, parent)
+        self.type_combo = PlaneTypeComboBox()
+        self.group_combo = GroupComboBox()
+        self.system_combo = SystemComboBox()
+        self.agregate_name = QLineEdit()
+
+        self.type_combo.currentTextChanged.connect(
+            lambda x: self.group_combo.load_data(self.type_combo.currentData())
+        )
+        self.group_combo.currentTextChanged.connect(
+            lambda x: self.system_combo.load_data(self.group_combo.currentData())
+        )
+
+        if system:
+            self.type_combo.setCurrentText(PlaneSystemBase.get_by_id(system).group.plane_type.name)
+            self.group_combo.setCurrentText(PlaneSystemBase.get_by_id(system).group.name)
+            self.system_combo.setCurrentText(PlaneSystemBase.get_by_id(system).name)
+        elif group:
+            self.type_combo.setCurrentText(GroupBase.get_by_id(group).plane_type.name)
+            self.group_combo.setCurrentText(GroupBase.get_by_id(group).name)
+        elif plane_type:
+            self.type_combo.setCurrentText(PlaneTypeBase.get_by_id(plane_type).name)
+
+        if self._data:
+            self.item = AgregateBase.get_by_id(data)
+        self.config_ui()
+
+    def config_ui(self):
+        self.setWindowTitle("Агрегат/Блок")
+        self.form_layout.addRow("Тип самолета:", self.type_combo)
+        self.form_layout.addRow("Группа обслуживания:", self.group_combo)
+        self.form_layout.addRow("Система самолета:", self.system_combo)
+        self.form_layout.addRow('Название блока/агрегата:', self.agregate_name)
+
+        if self._data:
+            self.type_combo.setCurrentText(item.system.group.plane_type.name)
+            self.group_combo.setCurrentText(item.system.group.name)
+            self.system_combo.setCurrentText(item.system.name)
+            self.agregate_name.setText(item.name)
+
+    def add_item(self):
+        if self._data:
+            self.item.system = self.system_combo.currentData()
+            self.item.name = self.agregate_name.text()
+            self.item.save()
+            self.accept()
+        else:
+            AgregateBase.create(name=self.agregate_name.text(), system=self.system_combo.currentData())
             self.accept()

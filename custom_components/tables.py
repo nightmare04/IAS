@@ -168,3 +168,22 @@ class GroupTable(UnTableView):
                 pass
 
 
+class AgregateTable(UnTableView):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def delete_item(self, item_id):
+        self.model().delete_item(item_id)
+        self.parent.refresh_data()
+
+    def edit_item(self, item_id):
+        from forms.settings import AddAgregate
+        dialog = AddAgregate(data=item_id, parent=self.parent)
+        dialog.exec()
+        if hasattr(self.parent, 'refresh_data') and callable(self.parent.refresh_data):
+            try:
+                self.parent.refresh_data()
+            except Exception:
+                pass
+
+

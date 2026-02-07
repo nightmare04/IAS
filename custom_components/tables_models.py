@@ -1,7 +1,7 @@
 from PyQt6.QtCore import QAbstractTableModel, QModelIndex, Qt
 from PyQt6.QtGui import QFont, QBrush, QColor
 
-from data.data_models import PlaneTypeBase, PodrazdBase, GroupBase, OtkazAgregateBase
+from data.data_models import PlaneTypeBase, PodrazdBase, GroupBase, OtkazAgregateBase, AgregateBase, PlaneSystemBase
 
 
 class IspravnostTableModel(QAbstractTableModel):
@@ -221,4 +221,42 @@ class GroupModel(UnTableModel):
     @staticmethod
     def delete_item(item_id):
         item = GroupBase.get_by_id(item_id)
+        item.delete_instance()
+
+
+class AgregateModel(UnTableModel):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def load_data(self, filter_type=None, filter_group=None, filter_system=None):
+        self.beginResetModel()
+        self.clear_data()
+        self._headers = ["Группа", "Система", "Блок/Агрегат"]
+
+        if filter_system:
+            query = (AgregateBase.select()
+                     .join(PlaneSystemBase)
+                     .join(GroupBase)
+                     .where(AgregateBase.system == filter_system))
+        elif filter_group:
+            query = (AgregateBase.select()
+                     .join(PlaneSystemBase)
+                     .join(GroupBase)
+                     .where(AgregateBase.system.group == filter_group))
+        elif filter_type:
+            query = (AgregateBase.select()
+                     .join(PlaneSystemBase)
+                     .join(GroupBase)
+                     .where(AgregateBase.system.group.plane_type == filter_type))
+        else:
+            query = AgregateBase.select()
+
+        for data in query:
+            self._data.append([data.system.group.name, data.system.name, data.name])
+            self._items_ids.append([data.id])
+        self.endResetModel()
+
+    @staticmethod
+    def delete_item(item_id):
+        item = AgregateBase.get_by_id(item_id)
         item.delete_instance()

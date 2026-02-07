@@ -19,6 +19,7 @@ class PlaneTypeComboBox(QComboBox):
 class GroupComboBox(QComboBox):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.addItem("Сначала выберете тип самолета...")
 
     def load_data(self, data=None):
         self.clear()
@@ -35,6 +36,7 @@ class GroupComboBox(QComboBox):
 class SystemComboBox(QComboBox):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.addItem("Сначала выберете группу обслуживания...")
 
     def load_data(self, data=None):
         self.clear()
