@@ -80,7 +80,7 @@ class PlaneIspravnost(QDialog):
          """)
 
         self.model = IspravnostTableModel(data=OtkazAgregateBase.select().where(id == self.plane.id))
-        self.table_view = IspravnostTableView()
+        self.table_view = IspravnostTableView(parent=self)
         self.table_view.setModel(self.model)
         self.setup_ui()
         self.load_data()

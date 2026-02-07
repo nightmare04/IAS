@@ -3,6 +3,7 @@ from PyQt6.QtGui import QAction
 from PyQt6.QtWidgets import QTableView, QAbstractItemView, QSizePolicy, QHeaderView, QMessageBox, QMenu
 
 from custom_components.tables_models import IspravnostTableModel, UnTableModel
+from data.data_models import OtkazAgregateBase
 from forms.otkaz_dialog import EditOtkazDialog
 
 
@@ -95,7 +96,7 @@ class IspravnostTableView(UnTableView):
             QMessageBox.warning(self, "Ошибка", "Блок/агрегат не найден!")
 
     def delete_item(self, item_id):
-        parent = self.parent()
+        parent = self.parent
         item = OtkazAgregateBase.get_by_id(item_id)
         item.delete_instance()
         parent.refresh_data()
