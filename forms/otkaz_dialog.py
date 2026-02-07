@@ -1,6 +1,7 @@
 
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QFormLayout, QLineEdit, QComboBox, QDialogButtonBox, QMessageBox
 
+from custom_components.combo_box import GroupComboBox, SystemComboBox, AgregateComboBox
 from data.data_models import PlaneBase, GroupBase, PlaneSystemBase, AgregateBase, OtkazAgregateBase
 
 
@@ -16,17 +17,13 @@ class AddOtkazDialog(QDialog):
 
         form_layout = QFormLayout()
 
-        self.group_combo = QComboBox()
-        self.group_combo.addItem('Выберите группу обслуживания')
-        self.group_combo.currentTextChanged.connect(self.load_system)
-        groups = GroupBase.select().where(GroupBase.plane_type == self.plane.plane_type)
-        for group in groups:
-            self.group_combo.addItem(group.name, group.id)
+        self.group_combo = GroupComboBox()
+        self.group_combo.load_data(self.plane.plane_type)
+        self.system_combo = SystemComboBox()
+        self.agregate_combo = AgregateComboBox()
 
-        self.system_combo = QComboBox()
-        self.system_combo.currentTextChanged.connect(self.load_agregate)
-
-        self.agregate_combo = QComboBox()
+        self.group_combo.currentTextChanged.connect(lambda x: self.system_combo.load_data(self.group_combo.currentData()))
+        self.system_combo.currentTextChanged.connect(lambda x: self.agregate_combo.load_data(self.system_combo.currentData()))
 
         self.agregate_number = QLineEdit()
         self.desc = QLineEdit()

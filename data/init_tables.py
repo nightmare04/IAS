@@ -1,7 +1,7 @@
 from peewee import SqliteDatabase
 
 from data.example import example_data
-from data.data_models import PlaneBase, PlaneSystemBase, PlaneTypeBase, OtkazAgregateBase, SpecBase, PodrazdBase, GroupBase, \
+from data.data_models import PlaneBase, PlaneSystemBase, PlaneTypeBase, OtkazAgregateBase, PodrazdBase, GroupBase, \
     AgregateBase
 
 db = SqliteDatabase('./data/database.db', pragmas={'foreign_keys': 1})
@@ -12,7 +12,7 @@ def create_tables():
             [
                 PlaneBase, PlaneSystemBase, PlaneTypeBase,
                 OtkazAgregateBase,
-                SpecBase, PodrazdBase, GroupBase, AgregateBase
+                PodrazdBase, GroupBase, AgregateBase
             ]
         )
 
@@ -22,7 +22,7 @@ def drop_tables():
             [
                 PlaneBase, PlaneSystemBase, PlaneTypeBase,
                 OtkazAgregateBase,
-                SpecBase, PodrazdBase, GroupBase, AgregateBase
+                PodrazdBase, GroupBase, AgregateBase
             ]
         )
 

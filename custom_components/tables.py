@@ -6,6 +6,7 @@ from custom_components.tables_models import IspravnostTableModel, UnTableModel
 from data.data_models import OtkazAgregateBase
 from forms.otkaz_dialog import EditOtkazDialog
 
+
 class UnTableView(QTableView):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -41,6 +42,7 @@ class UnTableView(QTableView):
 
     def delete_item(self, item_id):
         pass
+
 
 class IspravnostTableView(UnTableView):
     def __init__(self, parent=None):
@@ -99,6 +101,7 @@ class IspravnostTableView(UnTableView):
         self.model().delete_item(item_id)
         self.parent.refresh_data()
 
+
 class PlaneTypesTable(UnTableView):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -123,26 +126,8 @@ class PlaneTypesTable(UnTableView):
             except Exception:
                 pass
 
+
 class PodrazdTable(UnTableView):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
-    def delete_item(self, item_id):
-        self.model().delete_item(item_id)
-        self.parent.refresh_data()
-
-    def edit_item(self, item_id):
-        from forms.settings import AddPodrazd
-
-        dialog = AddPodrazd(data=item_id, parent=self.parent)
-        dialog.exec()
-        if hasattr(self.parent, 'refresh_data') and callable(self.parent.refresh_data):
-            try:
-                self.parent.refresh_data()
-            except Exception:
-                pass
-
-class SpecTable(UnTableView):
     def __init__(self, parent=None):
         super().__init__(parent)
 

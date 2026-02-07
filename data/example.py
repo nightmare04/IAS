@@ -1,6 +1,6 @@
 from peewee import SqliteDatabase
 
-from data.data_models import PlaneTypeBase, SpecBase, GroupBase, PlaneSystemBase, PodrazdBase, PlaneBase, AgregateBase, \
+from data.data_models import PlaneTypeBase, GroupBase, PlaneSystemBase, PodrazdBase, PlaneBase, AgregateBase, \
     OtkazAgregateBase
 
 db = SqliteDatabase('./data/database.db', pragmas={'foreign_keys': 1})
@@ -54,12 +54,8 @@ agregate_data = [
     {'plane_type': 1, 'system': 5,  'name': 'БУГ-14'},
     {'plane_type': 1, 'system': 5,  'name': 'БК-12'},
 ]
-spec_data = [
-    {'plane_type': 1, 'name': 'СД'},
-    {'plane_type': 1, 'name': 'АВ'},
-    {'plane_type': 1, 'name': 'АО'},
-    {'plane_type': 1, 'name': 'РЭО'}
-]
+
+
 group_data = [
     {'plane_type': 1, 'spec':3, 'name': 'ЭО и ЭА'},
     {'plane_type': 1, 'spec': 3, 'name': 'ПНК'},
@@ -78,8 +74,6 @@ def example_data():
     with db.atomic():
         for types in plane_type_data:
             PlaneTypeBase.create(**types)
-        for spec in spec_data:
-            SpecBase.create(**spec)
         for group in group_data:
             GroupBase.create(**group)
         for system in plane_system_data:
