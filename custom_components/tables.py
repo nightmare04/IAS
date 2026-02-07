@@ -84,7 +84,8 @@ class IspravnostTableView(UnTableView):
             cols = model.columnCount()
             for row in range(rows):
                 for col in range(cols):
-                    self.setSpan(row, col, 1, 1)
+                    if self.rowSpan(row, col) > 1:
+                        self.setSpan(row, col, 1, 1)
 
     def edit_item(self, item_id):
         try:
