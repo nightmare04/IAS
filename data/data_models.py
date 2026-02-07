@@ -52,5 +52,6 @@ class OtkazAgregateBase(BaseModel):
     plane = ForeignKeyField(PlaneBase)
     description = CharField(unique=False, default='')
     number = CharField()
+    removed = BooleanField(default=False)
 
 

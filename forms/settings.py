@@ -1,5 +1,6 @@
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QPushButton, QHBoxLayout, QFormLayout, QLineEdit, QComboBox
 
+from custom_components.combo_box import PlaneTypeComboBox
 from custom_components.tables_models import PlanesTypesModel, PodrazdModel, GroupModel
 from custom_components.tables import PlaneTypesTable, PodrazdTable, \
      GroupTable
@@ -57,25 +58,6 @@ class SettingsPodrazd(UnDialog):
 
     def add_item(self):
         dialog = AddPodrazd()
-        dialog.exec()
-        self._model.load_data()
-
-    def refresh_data(self):
-        self._model.load_data()
-
-
-class SettingsSpec(UnDialog):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setWindowTitle("Специальности")
-        self._table = SpecTable(self)
-        self._model = SpecModel(self)
-        self._table.setModel(self._model)
-        self._model.load_data()
-        self.main_layout.insertWidget(0, self._table)
-
-    def add_item(self):
-        dialog = AddSpec()
         dialog.exec()
         self._model.load_data()
 
@@ -183,42 +165,29 @@ class AddPodrazd(UnAddEditDialog):
             self.accept()
 
 
-class AddSpec(UnAddEditDialog):
-    def __init__(self, data=None, parent=None):
-        super().__init__(data, parent)
-        if self._data:
-            self.item = SpecBase.get_by_id(data)
-        self.spec = QLineEdit()
-        self.config_ui()
-
-    def config_ui(self):
-        self.setWindowTitle("Специальности")
-        self.form_layout.addRow('Название специальности', self.spec)
-        if self._data:
-            self.spec.setText(self.item.name)
-
-    def add_item(self):
-        if self._data:
-            self.item.name = self.spec.text()
-            self.item.save()
-            self.accept()
-        else:
-            SpecBase.create(name=self.spec.text())
-            self.accept()
-
-
 class AddGroup(UnAddEditDialog):
     def __init__(self, data=None, parent=None):
         super().__init__(data, parent)
+        self.type_combo = PlaneTypeComboBox()
+        self.group = QLineEdit()
         if self._data:
             self.item = GroupBase.get_by_id(data)
-        self.type_combo = QComboBox()
-        self.spec_combo = QComboBox()
-        self.group = QLineEdit()
         self.config_ui()
 
     def config_ui(self):
         self.setWindowTitle("Группы обслуживания")
-        self.form_layout.addRow('Название группы', self.spec)
+        self.form_layout.addRow("Тип самолета", self.type_combo)
+        self.form_layout.addRow('Название группы', self.group)
         if self._data:
-            self.spec.setText(self.item.name)
+            self.group.setText(self.item.name)
+            self.type_combo.setCurrentText(self.item.plane_type.name)
+
+    def add_item(self):
+        if self._data:
+            self.item.name = self.group.text()
+            self.item.plane_type = self.type_combo.currentData()
+            self.item.save()
+            self.accept()
+        else:
+            GroupBase.create(name=self.group.text(), plane_type=self.type_combo.currentData())
+            self.accept()

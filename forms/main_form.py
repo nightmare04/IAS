@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import (
 
 from custom_components.buttons import IASButton
 from forms.plane_ispravnost import IspravnostFrame
-from forms.settings import SettingsPlaneType, SettingsSpec, SettingsPodrazd, SettingsGroup
+from forms.settings import SettingsPlaneType, SettingsPodrazd, SettingsGroup
 
 
 class MainForm(QMainWindow):
@@ -18,15 +18,12 @@ class MainForm(QMainWindow):
         type_action.triggered.connect(self.plane_type_dialog)
         podr_action = QAction('Подразделения', self)
         podr_action.triggered.connect(self.podr_dialog)
-        spec_action = QAction('Специальности', self)
-        spec_action.triggered.connect(self.spec_dialog)
         group_action = QAction('Группы обслуживания', self)
         group_action.triggered.connect(self.group_dialog)
         agreg_action = QAction('Системы/агрегаты', self)
 
         settings_menu.addAction(type_action)
         settings_menu.addAction(podr_action)
-        settings_menu.addAction(spec_action)
         settings_menu.addAction(group_action)
         settings_menu.addSeparator()
         settings_menu.addAction(agreg_action)
@@ -50,10 +47,6 @@ class MainForm(QMainWindow):
 
     def podr_dialog(self):
         dialog = SettingsPodrazd()
-        dialog.exec()
-
-    def spec_dialog(self):
-        dialog = SettingsSpec()
         dialog.exec()
 
     def group_dialog(self):

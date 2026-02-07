@@ -1,5 +1,6 @@
 
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QFormLayout, QLineEdit, QComboBox, QDialogButtonBox, QMessageBox
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QFormLayout, QLineEdit, QComboBox, QDialogButtonBox, QMessageBox, \
+    QCheckBox
 
 from custom_components.combo_box import GroupComboBox, SystemComboBox, AgregateComboBox
 from data.data_models import PlaneBase, GroupBase, PlaneSystemBase, AgregateBase, OtkazAgregateBase
@@ -26,12 +27,14 @@ class AddOtkazDialog(QDialog):
         self.system_combo.currentTextChanged.connect(lambda x: self.agregate_combo.load_data(self.system_combo.currentData()))
 
         self.agregate_number = QLineEdit()
+        self.remove_checkbox = QCheckBox()
         self.desc = QLineEdit()
 
         form_layout.addRow("Группа обслуживания:", self.group_combo)
         form_layout.addRow("Система самолета:", self.system_combo)
         form_layout.addRow("Агрегат/блок:", self.agregate_combo)
         form_layout.addRow("Номер блока/агрегата:", self.agregate_number)
+        form_layout.addRow("Агрегат снят?", self.remove_checkbox)
         form_layout.addRow("Примечание:", self.desc)
 
         layout.addLayout(form_layout)
@@ -46,18 +49,6 @@ class AddOtkazDialog(QDialog):
         layout.addWidget(self.button_box)
         self.setLayout(layout)
 
-    def load_system(self):
-        self.system_combo.clear()
-        systems = PlaneSystemBase.select().where(PlaneSystemBase.group == self.group_combo.currentData())
-        for system in systems:
-            self.system_combo.addItem(system.name, system.id)
-
-    def load_agregate(self):
-        self.agregate_combo.clear()
-        agregate_list = AgregateBase.select().where(AgregateBase.system == self.system_combo.currentData())
-        for agregate in agregate_list:
-            self.agregate_combo.addItem(agregate.name, agregate.id)
-
     def create_item(self):
         try:
             agregate = self.agregate_combo.currentData()
@@ -65,9 +56,10 @@ class AddOtkazDialog(QDialog):
             OtkazAgregateBase.create(
                 agregate=agregate,
                 plane=self.plane.id,
-                number=self.agregate_number.text()
+                number=self.agregate_number.text(),
+                removed=self.remove_checkbox.isChecked(),
+                description=self.desc.text()
             )
-
             self.accept()
 
         except Exception as e:
@@ -88,7 +80,9 @@ class EditOtkazDialog(AddOtkazDialog):
     def load_data(self):
         self.group_combo.setCurrentText(self.otkaz_agregate.agregate.system.group.name)
         self.system_combo.setCurrentText(self.otkaz_agregate.agregate.system.name)
+        self.agregate_combo.setCurrentText(self.otkaz_agregate.agregate.name)
         self.agregate_number.setText(self.otkaz_agregate.number)
+        self.remove_checkbox.setChecked(self.otkaz_agregate.removed)
         self.desc.setText(self.otkaz_agregate.description)
 
     def edit_item(self):
@@ -97,6 +91,8 @@ class EditOtkazDialog(AddOtkazDialog):
             item = self.otkaz_agregate
             item.agregate = agregate
             item.number = self.agregate_number.text()
+            item.removed = self.remove_checkbox.isChecked()
+            item.description = self.desc.text()
             item.save()
             self.accept()
 

@@ -118,6 +118,7 @@ class PlaneTypesTable(UnTableView):
                 pass
 
     def delete_item(self, item_id):
+        from data.data_models import PlaneTypeBase
         item = PlaneTypeBase.get_by_id(item_id)
         item.delete_instance()
         if hasattr(self.parent, 'refresh_data') and callable(self.parent.refresh_data):

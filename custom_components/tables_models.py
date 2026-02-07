@@ -8,7 +8,7 @@ class IspravnostTableModel(QAbstractTableModel):
     def __init__(self, data, parent=None):
         super().__init__(parent)
         self._data = data
-        self._headers = ["Наименование", "Система", "Номер агрегата/блока", "Примечание"]
+        self._headers = ["Наименование", "Система", "Номер агрегата/блока", "Снят", "Примечание"]
         self._prepared_data = []
         self._group_rows = []
         self._group_values = []
@@ -26,7 +26,6 @@ class IspravnostTableModel(QAbstractTableModel):
 
         # Сортируем по категории
         sorted_data = sorted(data, key=lambda x: str(x.agregate.system.name))
-
         current_group = None
         row_idx = 0
 
@@ -44,7 +43,12 @@ class IspravnostTableModel(QAbstractTableModel):
                 current_group = group_value
 
             # Добавляем обычную строку данных
-            row_data = [item.agregate.name, item.agregate.system.name, item.number, item.description]
+            if item.removed:
+                removed = 'Снят'
+            else:
+                removed = 'На самолете'
+
+            row_data = [item.agregate.name, item.agregate.system.name, item.number, removed, item.description]
             self._prepared_data.append(row_data)
             self._items_ids.append(item.id)
             self._row_type.append('agregate')
@@ -207,10 +211,10 @@ class GroupModel(UnTableModel):
     def load_data(self):
         self.beginResetModel()
         self.clear_data()
-        self._headers = ["Группа", "Специальность", "Тип"]
+        self._headers = ["Группа", "Тип"]
         query = GroupBase.select()
         for data in query:
-            self._data.append([data.name, data.spec.name, data.plane_type.name])
+            self._data.append([data.name, data.plane_type.name])
             self._items_ids.append([data.id])
         self.endResetModel()
 
