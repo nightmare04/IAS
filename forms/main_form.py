@@ -20,13 +20,16 @@ class MainForm(QMainWindow):
         podr_action.triggered.connect(self.podr_dialog)
         group_action = QAction('Группы обслуживания', self)
         group_action.triggered.connect(self.group_dialog)
-        agreg_action = QAction('Системы/агрегаты', self)
+        planes_action = QAction('Самолеты', self)
+        planes_action.triggered.connect(self.planes_dialog)
+        agreg_action = QAction('Блоки/агрегаты', self)
         agreg_action.triggered.connect(self.agregate_dialog)
 
         settings_menu.addAction(type_action)
         settings_menu.addAction(podr_action)
         settings_menu.addAction(group_action)
         settings_menu.addSeparator()
+        settings_menu.addAction(planes_action)
         settings_menu.addAction(agreg_action)
 
         self.setWindowTitle("Исправность")
@@ -56,6 +59,10 @@ class MainForm(QMainWindow):
 
     def agregate_dialog(self):
         dialog = SettingsAgregate()
+        dialog.exec()
+
+    def planes_dialog(self):
+        dialog = SettingsPlanes()
         dialog.exec()
 
     def create_button_panel(self) -> QWidget:

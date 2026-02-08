@@ -128,7 +128,12 @@ class SettingsAgregate(UnDialog):
         else:
             dialog = AddAgregate()
         dialog.exec()
-        self._model.load_data()
+        self.plane_type_combo.setCurrentText(dialog.type_combo.currentText())
+        self.group_combo.setCurrentText(dialog.group_combo.currentText())
+        self.system_combo.setCurrentText(dialog.system_combo.currentText())
+
+        self._model.load_data(filter_system=self.system_combo.currentData())
+        # self._model.load_data()
 
 
 class UnAddEditDialog(QDialog):

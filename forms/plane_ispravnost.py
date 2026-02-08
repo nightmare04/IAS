@@ -11,9 +11,9 @@ from forms.otkaz_dialog import AddOtkazDialog, EditOtkazDialog
 class IspravnostFrame(QFrame):
     def __init__(self):
         super().__init__()
-        self.load_condition()
+        self.load_data()
 
-    def load_condition(self):
+    def load_data(self):
         podr_data = PodrazdBase.select()
         podr_layout = QGridLayout()
         for i, podr in enumerate(podr_data):

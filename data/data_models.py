@@ -34,7 +34,6 @@ class PlaneSystemBase(BaseModel):
 
 
 class AgregateBase(BaseModel):
-    plane_type = ForeignKeyField(PlaneTypeBase)
     system = ForeignKeyField(PlaneSystemBase)
     count_on_plane = IntegerField(default=1)
     name = CharField(unique=False)
@@ -44,7 +43,17 @@ class PlaneBase(BaseModel):
     plane_type = ForeignKeyField(PlaneTypeBase)
     podrazd = ForeignKeyField(PodrazdBase)
     zav_num = CharField(unique=True)
-    bort_number = CharField(unique=True)
+    bort_number = CharField(unique=False)
+
+
+class OsobPlaneTypeBase(BaseModel):
+    plane_type = ForeignKeyField(PlaneTypeBase)
+    name = CharField(unique=True)
+
+
+class OsobPlane(BaseModel):
+    plane = ForeignKeyField(PlaneBase)
+    osob = ForeignKeyField(OsobPlaneTypeBase)
 
 
 class OtkazAgregateBase(BaseModel):
