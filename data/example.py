@@ -1,7 +1,7 @@
 from peewee import SqliteDatabase
 
 from data.data_models import PlaneTypeBase, GroupBase, PlaneSystemBase, PodrazdBase, PlaneBase, AgregateBase, \
-    OtkazAgregateBase
+    OtkazAgregateBase, OsobSystemRemoveBase, OsobPlaneBase, OsobSystemAddBase, OsobBase
 
 db = SqliteDatabase('./data/database.db', pragmas={'foreign_keys': 1})
 
@@ -70,6 +70,26 @@ otkaz_agr_data = [
     {'plane': 1, 'number': '321123', 'agregate': 10},
 ]
 
+osobs_data = [
+    {'plane_type': 1, 'name': 'M1'},
+    {'plane_type': 1, 'name': 'M2'},
+]
+
+osob_plane_data = [
+    {'plane': 1, 'osob': '1'},
+    {'plane': 1, 'osob': '2'},
+]
+
+system_add_data = [
+    {'osob': 1, 'system': 5},
+    {'osob': 2, 'system': 4},
+]
+
+system_remove_data = [
+    {'osob': 1, 'system': 3},
+    {'osob': 2, 'system': 2},
+]
+
 def example_data():
     with db.atomic():
         for types in plane_type_data:
@@ -86,3 +106,12 @@ def example_data():
             AgregateBase.create(**agregate)
         for otkaz in otkaz_agr_data:
             OtkazAgregateBase.create(**otkaz)
+        for data in osobs_data:
+            OsobBase.create(**data)
+        for data in osob_plane_data:
+            OsobPlaneBase.create(**data)
+        for data in system_add_data:
+            OsobSystemAddBase.create(**data)
+        for data in system_remove_data:
+            OsobSystemRemoveBase.create(**data)
+
