@@ -4,7 +4,7 @@ from custom_components.combo_box import PlaneTypeComboBox, SystemComboBox, Group
 from custom_components.tables_models import PlanesTypesModel, PodrazdModel, GroupModel, AgregateModel
 from custom_components.tables import PlaneTypesTable, PodrazdTable, \
      GroupTable, AgregateTable
-from data.data_models import PlaneTypeBase, PodrazdBase, GroupBase, AgregateBase, PlaneSystemBase
+from data.data import PlaneTypeBase, PodrazdBase, GroupBase, AgregateBase, PlaneSystemBase
 
 
 class UnDialog(QDialog):

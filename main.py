@@ -2,6 +2,8 @@ import sys
 from PyQt6.QtWidgets import QApplication
 
 from data import init_tables
+from data.data import PlaneBase
+from data.data import get_systems_for_plane
 from forms.main_form import MainForm
 
 

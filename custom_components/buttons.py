@@ -1,7 +1,7 @@
 from PyQt6.QtCore import QSize
 from PyQt6.QtWidgets import QPushButton
 
-from data.data_models import PlaneBase, OtkazAgregateBase
+from data.data import PlaneBase, OtkazAgregateBase
 
 
 class IASButton(QPushButton):

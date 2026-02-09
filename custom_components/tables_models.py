@@ -1,7 +1,7 @@
 from PyQt6.QtCore import QAbstractTableModel, QModelIndex, Qt
 from PyQt6.QtGui import QFont, QBrush, QColor
 
-from data.data_models import PlaneTypeBase, PodrazdBase, GroupBase, OtkazAgregateBase, AgregateBase, PlaneSystemBase
+from data.data import PlaneTypeBase, PodrazdBase, GroupBase, OtkazAgregateBase, AgregateBase, PlaneSystemBase
 
 
 class IspravnostTableModel(QAbstractTableModel):

@@ -1,6 +1,6 @@
 from peewee import SqliteDatabase
 
-from data.data_models import PlaneTypeBase, GroupBase, PlaneSystemBase, PodrazdBase, PlaneBase, AgregateBase, \
+from data.data import PlaneTypeBase, GroupBase, PlaneSystemBase, PodrazdBase, PlaneBase, AgregateBase, \
     OtkazAgregateBase, OsobSystemRemoveBase, OsobPlaneBase, OsobSystemAddBase, OsobBase
 
 db = SqliteDatabase('./data/database.db', pragmas={'foreign_keys': 1})

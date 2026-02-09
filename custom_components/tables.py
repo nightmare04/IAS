@@ -3,7 +3,7 @@ from PyQt6.QtGui import QAction
 from PyQt6.QtWidgets import QTableView, QAbstractItemView, QSizePolicy, QHeaderView, QMessageBox, QMenu
 
 from custom_components.tables_models import IspravnostTableModel, UnTableModel
-from data.data_models import OtkazAgregateBase
+from data.data import OtkazAgregateBase
 from forms.otkaz_dialog import EditOtkazDialog
 
 
@@ -118,7 +118,7 @@ class PlaneTypesTable(UnTableView):
                 pass
 
     def delete_item(self, item_id):
-        from data.data_models import PlaneTypeBase
+        from data.data import PlaneTypeBase
         item = PlaneTypeBase.get_by_id(item_id)
         item.delete_instance()
         if hasattr(self.parent, 'refresh_data') and callable(self.parent.refresh_data):

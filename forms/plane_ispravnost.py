@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QDialog, QVBoxLayout, QWidget, QHBoxLayout, QComboBo
 from custom_components.buttons import PlaneBtn
 from custom_components.groups import PodrGroup
 from custom_components.tables import IspravnostTableModel, IspravnostTableView
-from data.data_models import PlaneBase, GroupBase, OtkazAgregateBase, AgregateBase, PlaneSystemBase, PodrazdBase
+from data.data import PlaneBase, GroupBase, OtkazAgregateBase, AgregateBase, PlaneSystemBase, PodrazdBase
 from forms.otkaz_dialog import AddOtkazDialog, EditOtkazDialog
 
 class IspravnostFrame(QFrame):

@@ -1,7 +1,7 @@
 from PyQt6.QtCore import QAbstractListModel, Qt
 from PyQt6.QtWidgets import QComboBox
 
-from data.data_models import PlaneTypeBase, GroupBase, PlaneSystemBase, AgregateBase
+from data.data import PlaneTypeBase, GroupBase, PlaneSystemBase, AgregateBase
 
 class ComboBoxModel(QAbstractListModel):
     def __init__(self, peewee_model=None, display_field='name', query_filter=None, parent=None):

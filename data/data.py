@@ -7,14 +7,15 @@ db = SqliteDatabase('./data/database.db', pragmas={'foreign_keys': 1})
 
 def get_systems_for_plane(plane:PlaneBase) -> list[PlaneSystemBase]:
     osob_list = OsobPlaneBase.select().where(OsobPlaneBase.plane == plane)
-    systems = (PlaneSystemBase.select(PlaneSystemBase.id)
+    systems = (PlaneSystemBase.select()
                .where(PlaneSystemBase.id.not_in(OsobSystemAddBase
                       .select(OsobSystemAddBase.system)))
                .where(PlaneSystemBase.id.not_in(OsobSystemRemoveBase
                       .select(OsobSystemRemoveBase.system)
                       .where(OsobSystemRemoveBase.osob << osob_list)))
-               .union(OsobSystemAddBase
-                      .select(OsobSystemAddBase.system)
+               .union(PlaneSystemBase
+                      .select()
+                      .join(OsobSystemAddBase)
                       .where(OsobSystemAddBase.osob << osob_list))
                     )
     return systems
