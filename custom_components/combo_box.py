@@ -4,19 +4,17 @@ from PyQt6.QtWidgets import QComboBox
 from data.data import PlaneTypeBase, GroupBase, PlaneSystemBase, AgregateBase
 
 class ComboBoxModel(QAbstractListModel):
-    def __init__(self, peewee_model=None, display_field='name', query_filter=None, parent=None):
+    def __init__(self, peewee_model=None, query=None, display_field='name', parent=None):
         super().__init__(parent)
+        self._query = query
         self.peewee_model = peewee_model
         self.display_field = display_field
-        self.query_filter = query_filter
         self._data = []
-        self.load_data()
 
-    def load_data(self):
+    def load_data(self, query_filter=None):
         query = self.peewee_model.select()
-        if self.query_filter:
-            query = query.where(self.query_filter)
-
+        if query_filter:
+            query = query.where(query_filter)
         self._data = list(query)
 
     def rowCount(self, parent=None):

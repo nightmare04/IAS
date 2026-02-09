@@ -2,8 +2,8 @@
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QFormLayout, QLineEdit, QComboBox, QDialogButtonBox, QMessageBox, \
     QCheckBox
 
-from custom_components.combo_box import GroupComboBox, SystemComboBox, AgregateComboBox
-from data.data import PlaneBase, GroupBase, PlaneSystemBase, AgregateBase, OtkazAgregateBase
+from custom_components.combo_box import GroupComboBox, SystemComboBox, AgregateComboBox, ComboBoxModel
+from data.data import PlaneBase, GroupBase, PlaneSystemBase, AgregateBase, OtkazAgregateBase, get_systems_for_plane
 
 
 class AddOtkazDialog(QDialog):
@@ -15,15 +15,25 @@ class AddOtkazDialog(QDialog):
         self.setFixedSize(350, 250)
 
         layout = QVBoxLayout()
-
         form_layout = QFormLayout()
 
-        self.group_combo = GroupComboBox()
-        self.group_combo.load_data(self.plane.plane_type)
-        self.system_combo = SystemComboBox()
+        self.group_combo = QComboBox()
+        self.group_combo_model = ComboBoxModel(peewee_model=GroupBase)
+        self.group_combo.setModel(self.group_combo_model)
+        self.group_combo_model.load_data(query_filter=GroupBase.plane_type == self.plane.plane_type)
+
+        self.system_combo = QComboBox()
+        self.system_combo_model = ComboBoxModel(
+            peewee_model=PlaneSystemBase,
+            query=get_systems_for_plane(self.plane)
+        )
+        self.system_combo.setModel(self.system_combo_model)
+
         self.agregate_combo = AgregateComboBox()
 
-        self.group_combo.currentTextChanged.connect(lambda x: self.system_combo.load_data(self.group_combo.currentData()))
+        self.group_combo.currentTextChanged.connect(lambda x: self.system_combo_model.load_data(
+            query_filter=PlaneSystemBase.group == self.group_combo.currentData())
+                                                    )
         self.system_combo.currentTextChanged.connect(lambda x: self.agregate_combo.load_data(self.system_combo.currentData()))
 
         self.agregate_number = QLineEdit()
