@@ -13,6 +13,8 @@ class ComboBoxModel(QAbstractListModel):
 
     def load_data(self, query_filter=None):
         query = self.peewee_model.select()
+        if self._query:
+            query = self._query
         if query_filter:
             query = query.where(query_filter)
         self._data = list(query)
