@@ -92,7 +92,7 @@ class SystemComboBox(QComboBox):
 class AgregateComboBox(QComboBox):
     def __init__(self, parent=None):
         super().__init__(parent)
-
+        self.addItem("Сначала выберете систему самолета...")
     def load_data(self, data=None):
         self.clear()
         self.addItem("Выберите блок/агрегат")

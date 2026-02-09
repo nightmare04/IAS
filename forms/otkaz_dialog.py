@@ -17,22 +17,12 @@ class AddOtkazDialog(QDialog):
         layout = QVBoxLayout()
         form_layout = QFormLayout()
 
-        self.group_combo = QComboBox()
-        self.group_combo_model = ComboBoxModel(peewee_model=GroupBase)
-        self.group_combo.setModel(self.group_combo_model)
-        self.group_combo_model.load_data(query_filter=GroupBase.plane_type == self.plane.plane_type)
-
-        self.system_combo = QComboBox()
-        self.system_combo_model = ComboBoxModel(
-            peewee_model=PlaneSystemBase,
-            query=get_systems_for_plane(self.plane)
-        )
-        self.system_combo.setModel(self.system_combo_model)
-
+        self.group_combo = GroupComboBox()
+        self.group_combo.load_data(plane)
+        self.system_combo = SystemComboBox()
         self.agregate_combo = AgregateComboBox()
 
-        self.group_combo.currentTextChanged.connect(lambda x: self.system_combo_model.load_data(
-            query_filter=PlaneSystemBase.group == self.group_combo.currentData())
+        self.group_combo.currentTextChanged.connect(lambda x: self.system_combo.load_data(self.group_combo.currentData())
                                                     )
         self.system_combo.currentTextChanged.connect(lambda x: self.agregate_combo.load_data(self.system_combo.currentData()))
 
