@@ -5,26 +5,26 @@ from peewee import *
 
 db = SqliteDatabase('./data/database.db', pragmas={'foreign_keys': 1})
 
-def get_systems_for_plane(plane:PlaneBase, group:GroupBase=None) -> list[PlaneSystemBase]:
+def get_systems_for_plane(plane:PlaneBase, group:GroupBase=None) -> list[SystemBase]:
     osob_list = OsobPlaneBase.select().where(OsobPlaneBase.plane == plane)
-    systems = (PlaneSystemBase
+    systems = (SystemBase
                .select()
-               .where(PlaneSystemBase.group == group)
-               .where(PlaneSystemBase.id.not_in(OsobSystemAddBase
-                                                .select(OsobSystemAddBase.system)
-                                                .where(OsobSystemAddBase.system.plane_type == plane.id)))
-               .where(PlaneSystemBase.id.not_in(OsobSystemRemoveBase
-                                                .select(OsobSystemRemoveBase.system)
-                                                .where(OsobSystemRemoveBase.osob << osob_list)))
-               .switch(PlaneSystemBase)
-               .union(PlaneSystemBase
+               .where(SystemBase.group == group)
+               .where(SystemBase.id.not_in(OsobSystemAddBase
+                                           .select(OsobSystemAddBase.system)
+                                           .where(OsobSystemAddBase.system.plane_type == plane.id)))
+               .where(SystemBase.id.not_in(OsobSystemRemoveBase
+                                           .select(OsobSystemRemoveBase.system)
+                                           .where(OsobSystemRemoveBase.osob << osob_list)))
+               .switch(SystemBase)
+               .union(SystemBase
                       .select()
                       .join(OsobSystemAddBase)
                       .where(OsobSystemAddBase.system.group == group.id)
                       .where(OsobSystemAddBase.osob << osob_list))
                )
     if group:
-        systems = systems.where(PlaneSystemBase.group == group)
+        systems = systems.where(SystemBase.group == group)
     return systems
 
 class BaseModel(Model):
@@ -35,7 +35,7 @@ class BaseModel(Model):
         database = db
 
 
-class PlaneTypeBase(BaseModel):
+class TypeBase(BaseModel):
     name = CharField(unique=True)
 
 
@@ -44,47 +44,47 @@ class PodrazdBase(BaseModel):
 
 
 class GroupBase(BaseModel):
-    plane_type = ForeignKeyField(PlaneTypeBase, backref='groups')
+    plane_type = ForeignKeyField(TypeBase, backref='groups')
     name = CharField(unique=True)
 
 
-class PlaneSystemBase(BaseModel):
-    plane_type = ForeignKeyField(PlaneTypeBase, backref='systems')
+class SystemBase(BaseModel):
+    plane_type = ForeignKeyField(TypeBase, backref='systems')
     name = CharField(unique=True)
     group = ForeignKeyField(GroupBase)
 
 
 class AgregateBase(BaseModel):
-    system = ForeignKeyField(PlaneSystemBase, backref='agregates')
+    system = ForeignKeyField(SystemBase, backref='agregates')
     count_on_plane = IntegerField(default=1)
     name = CharField(unique=False)
 
 
 class PlaneBase(BaseModel):
-    plane_type = ForeignKeyField(PlaneTypeBase, backref='planes')
+    plane_type = ForeignKeyField(TypeBase, backref='planes')
     podrazd = ForeignKeyField(PodrazdBase, backref='planes')
     zav_num = CharField(unique=True)
     bort_number = CharField(unique=False)
 
 
-class OsobBase(BaseModel):
-    plane_type = ForeignKeyField(PlaneTypeBase, backref='osobs')
+class OsobTypeBase(BaseModel):
+    plane_type = ForeignKeyField(TypeBase, backref='osobs')
     name = CharField(unique=True)
 
 
 class OsobPlaneBase(BaseModel):
-    osob = ForeignKeyField(OsobBase, backref='osobs')
+    osob = ForeignKeyField(OsobTypeBase, backref='osobs')
     plane = ForeignKeyField(PlaneBase)
 
 
 class OsobSystemAddBase(BaseModel):
-    osob = ForeignKeyField(OsobBase, backref='systems_to_add')
-    system = ForeignKeyField(PlaneSystemBase, backref='systems_to_add')
+    osob = ForeignKeyField(OsobTypeBase, backref='systems_to_add')
+    system = ForeignKeyField(SystemBase, backref='systems_to_add')
 
 
 class OsobSystemRemoveBase(BaseModel):
-    osob = ForeignKeyField(OsobBase, backref='systems_to_remove')
-    system = ForeignKeyField(PlaneSystemBase, backref='systems_to_remove')
+    osob = ForeignKeyField(OsobTypeBase, backref='systems_to_remove')
+    system = ForeignKeyField(SystemBase, backref='systems_to_remove')
 
 
 class OtkazAgregateBase(BaseModel):

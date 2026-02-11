@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import QDialog, QVBoxLayout, QFormLayout, QLineEdit, QCombo
     QCheckBox
 
 from custom_components.combo_box import GroupComboBox, SystemComboBox, AgregateComboBox, ComboBoxModel
-from data.data import PlaneBase, GroupBase, PlaneSystemBase, AgregateBase, OtkazAgregateBase, get_systems_for_plane
+from data.data import PlaneBase, GroupBase, SystemBase, AgregateBase, OtkazAgregateBase, get_systems_for_plane
 
 
 class AddOtkazDialog(QDialog):
@@ -18,13 +18,11 @@ class AddOtkazDialog(QDialog):
         form_layout = QFormLayout()
 
         self.group_combo = GroupComboBox()
-        self.group_combo.load_data(plane)
         self.system_combo = SystemComboBox()
         self.agregate_combo = AgregateComboBox()
 
-        self.group_combo.currentTextChanged.connect(lambda x: self.system_combo.load_data(self.group_combo.currentData())
-                                                    )
-        self.system_combo.currentTextChanged.connect(lambda x: self.agregate_combo.load_data(self.system_combo.currentData()))
+        self.group_combo.currentTextChanged.connect(self.system_combo.set_filter)
+        self.system_combo.currentTextChanged.connect(self.agregate_combo.set_filter)
 
         self.agregate_number = QLineEdit()
         self.remove_checkbox = QCheckBox()

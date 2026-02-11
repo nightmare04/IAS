@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QDialog, QVBoxLayout, QWidget, QHBoxLayout, QComboBo
 from custom_components.buttons import PlaneBtn
 from custom_components.groups import PodrGroup
 from custom_components.tables import IspravnostTableModel, IspravnostTableView
-from data.data import PlaneBase, GroupBase, OtkazAgregateBase, AgregateBase, PlaneSystemBase, PodrazdBase
+from data.data import PlaneBase, GroupBase, OtkazAgregateBase, AgregateBase, SystemBase, PodrazdBase
 from forms.otkaz_dialog import AddOtkazDialog, EditOtkazDialog
 
 class IspravnostFrame(QFrame):
@@ -130,7 +130,7 @@ class PlaneIspravnost(QDialog):
             query = (OtkazAgregateBase
                      .select()
                      .join(AgregateBase)
-                     .join(PlaneSystemBase)
+                     .join(SystemBase)
                      .join(GroupBase)
                      .where(OtkazAgregateBase.plane == self.plane.id))
 

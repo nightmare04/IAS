@@ -4,7 +4,7 @@ from custom_components.combo_box import PlaneTypeComboBox, SystemComboBox, Group
 from custom_components.tables_models import PlanesTypesModel, PodrazdModel, GroupModel, AgregateModel
 from custom_components.tables import PlaneTypesTable, PodrazdTable, \
      GroupTable, AgregateTable
-from data.data import PlaneTypeBase, PodrazdBase, GroupBase, AgregateBase, PlaneSystemBase
+from data.data import TypeBase, PodrazdBase, GroupBase, AgregateBase, SystemBase
 
 
 class UnDialog(QDialog):
@@ -95,8 +95,12 @@ class SettingsAgregate(UnDialog):
         self.plane_type_combo = PlaneTypeComboBox()
         self.group_combo = GroupComboBox()
         self.system_combo = SystemComboBox()
+
         self.plane_type_combo.currentTextChanged.connect(
-            lambda x: self.group_combo.load_data(self.plane_type_combo.currentData())
+            lambda x: self.group_combo.set_filter(GroupBase
+                                                 .select()
+                                                 .where(GroupBase.plane_type == self.plane_type_combo.currentData())
+                                                 )
         )
         self.plane_type_combo.currentTextChanged.connect(
             lambda x: self._model.load_data(filter_type=self.plane_type_combo.currentData())
@@ -173,7 +177,7 @@ class AddPlaneType(UnAddEditDialog):
     def __init__(self, data=None, parent=None):
         super().__init__(data, parent)
         if self._data:
-            self.item = PlaneTypeBase.get_by_id(data)
+            self.item = TypeBase.get_by_id(data)
         self.plane_type = QLineEdit()
         self.config_ui()
 
@@ -189,7 +193,7 @@ class AddPlaneType(UnAddEditDialog):
             self.item.save()
             self.accept()
         else:
-            PlaneTypeBase.create(name=self.plane_type.text())
+            TypeBase.create(name=self.plane_type.text())
             self.accept()
 
 
@@ -261,14 +265,14 @@ class AddAgregate(UnAddEditDialog):
         )
 
         if system:
-            self.type_combo.setCurrentText(PlaneSystemBase.get_by_id(system).group.plane_type.name)
-            self.group_combo.setCurrentText(PlaneSystemBase.get_by_id(system).group.name)
-            self.system_combo.setCurrentText(PlaneSystemBase.get_by_id(system).name)
+            self.type_combo.setCurrentText(SystemBase.get_by_id(system).group.plane_type.name)
+            self.group_combo.setCurrentText(SystemBase.get_by_id(system).group.name)
+            self.system_combo.setCurrentText(SystemBase.get_by_id(system).name)
         elif group:
             self.type_combo.setCurrentText(GroupBase.get_by_id(group).plane_type.name)
             self.group_combo.setCurrentText(GroupBase.get_by_id(group).name)
         elif plane_type:
-            self.type_combo.setCurrentText(PlaneTypeBase.get_by_id(plane_type).name)
+            self.type_combo.setCurrentText(TypeBase.get_by_id(plane_type).name)
 
         if self._data:
             self.item = AgregateBase.get_by_id(data)

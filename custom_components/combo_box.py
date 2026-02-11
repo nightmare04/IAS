@@ -1,23 +1,25 @@
 from PyQt6.QtCore import QAbstractListModel, Qt
 from PyQt6.QtWidgets import QComboBox
 
-from data.data import PlaneTypeBase, GroupBase, PlaneSystemBase, AgregateBase
+from data.data import TypeBase, GroupBase, SystemBase, AgregateBase
 
 class ComboBoxModel(QAbstractListModel):
-    def __init__(self, peewee_model=None, query=None, display_field='name', parent=None):
+    def __init__(self, peewee_model=None, first_string=None, display_field='name', parent=None):
         super().__init__(parent)
-        self._query = query
-        self.peewee_model = peewee_model
+        self._peewee_model = peewee_model
+        self._first_string = first_string
         self.display_field = display_field
+        self.query_filter = None
         self._data = []
+        self.load_data()
 
-    def load_data(self, query_filter=None):
-        query = self.peewee_model.select()
-        if self._query:
-            query = self._query
-        if query_filter:
-            query = query.where(query_filter)
+    def load_data(self):
+        query = self._peewee_model.select()
+        if self.query_filter:
+            query = query.where(self.query_filter)
         self._data = list(query)
+        if self._first_string:
+            self._data.insert(0, self._first_string)
 
     def rowCount(self, parent=None):
         return len(self._data)
@@ -29,74 +31,69 @@ class ComboBoxModel(QAbstractListModel):
         item = self._data[index.row()]
 
         if role == Qt.ItemDataRole.DisplayRole:
-            # Получаем значение поля для отображения
+            if isinstance(item, str):
+                return item
             return getattr(item, self.display_field)
         elif role == Qt.ItemDataRole.UserRole:
-            # Возвращаем весь объект Peewee
             return item
 
         return None
 
     def refresh(self):
-        """Обновление данных из базы"""
         self.beginResetModel()
         self.load_data()
         self.endResetModel()
 
-
-
 class PlaneTypeComboBox(QComboBox):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.load_data()
-
-    def load_data(self):
-        self.clear()
-        self.addItem("Выберите тип самолета", 0)
-        list_data = PlaneTypeBase.select()
-        for plane_type in list_data:
-            self.addItem(plane_type.name, plane_type.id)
+        self._model = ComboBoxModel(peewee_model=TypeBase.select(), first_string='Выберите тип самолета')
+        self.setModel(self._model)
 
 
 class GroupComboBox(QComboBox):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.addItem("Сначала выберете тип самолета...")
+        self._peewee_model = GroupBase
+        self._filter_field =
+        self._model = ComboBoxModel(peewee_model=GroupBase.select(), first_string='Выберите группу обслуживания')
+        self.setModel(self._model)
 
-    def load_data(self, data=None):
-        self.clear()
-        self.addItem("Выберите группу обслуживания", 0)
-        if data is None:
-            list_data = GroupBase.select()
-        else:
-            list_data = GroupBase.select().where(GroupBase.plane_type == data)
-
-        for spec in list_data:
-            self.addItem(spec.name, spec.id)
-
+    def set_filter(self, value):
+        item = self._peewee_model.get_or_none(self._peewee_model.name == value)
+        query = (self._peewee_model
+                 .select()
+                 .where(self._peewee_model.plane_type == item)
+                 )
+        self._model.query_filter = query
+        self._model.refresh()
 
 class SystemComboBox(QComboBox):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.addItem("Сначала выберете группу обслуживания...")
+        self._model = ComboBoxModel(peewee_model=SystemBase.select(), first_string='Выберите систему самолета')
+        self.setModel(self._model)
 
-    def load_data(self, data=None):
-        self.clear()
-        self.addItem("Выберите систему самолета")
-        if data:
-            list_data = PlaneSystemBase.select().where(PlaneSystemBase.group == data)
-            for system in list_data:
-                self.addItem(system.name, system.id)
-
+    def set_filter(self, group_str):
+        group = GroupBase.get_or_none(GroupBase.name == group_str)
+        query = (SystemBase
+                 .select()
+                 .where(SystemBase.group == group)
+                 )
+        self._model.query_filter = query
+        self._model.refresh()
 
 class AgregateComboBox(QComboBox):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.addItem("Сначала выберете систему самолета...")
-    def load_data(self, data=None):
-        self.clear()
-        self.addItem("Выберите блок/агрегат")
-        if data:
-            list_data = AgregateBase.select().where(AgregateBase.system == data)
-            for agregate in list_data:
-                self.addItem(agregate.name, agregate.id)
+        self._model = ComboBoxModel(peewee_model=AgregateBase.select(), first_string='Выберите блок/агрегат самолета')
+        self.setModel(self._model)
+
+    def set_filter(self, system_str):
+        system = TypeBase.get_or_none(TypeBase.name == system_str)
+        query = (AgregateBase
+                 .select()
+                 .where(AgregateBase.system == system)
+                 )
+        self._model.query_filter = query
+        self._model.refresh()
