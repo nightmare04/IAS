@@ -1,10 +1,11 @@
-from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtCore import pyqtSignal, pyqtSlot
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QPushButton, QHBoxLayout, QFormLayout, QLineEdit
 
 from custom_components.combo_box import PlaneTypeComboBox, SystemComboBox, GroupComboBox
-from custom_components.tables_models import PlanesTypesModel, PodrazdModel, GroupModel, AgregateModel, PlanesModel
+from custom_components.tables_models import PlanesTypesModel, PodrazdModel, GroupModel, AgregateModel, PlanesModel, \
+    UnTableModel
 from custom_components.tables import PlaneTypesTable, PodrazdTable, \
-    GroupTable, AgregateTable
+    GroupTable, AgregateTable, UnTableView
 from data.data import TypeBase, PodrazdBase, GroupBase, AgregateBase, SystemBase, PlaneBase
 
 
@@ -16,7 +17,7 @@ class UnDialog(QDialog):
         self.setGeometry(300, 300, 400, 300)
         self.main_layout = QVBoxLayout()
         self.setLayout(self.main_layout)
-
+        self.table = UnTableView()
         self.btn_ok = QPushButton('OK')
         self.btn_ok.clicked.connect(self.accept)
         self.btn_add = QPushButton('Добавить')
@@ -29,36 +30,45 @@ class UnDialog(QDialog):
     def add_item(self):
         pass
 
+    def refresh_data(self):
+        self.table.table_model.load_data()
+
 
 class SettingsPlaneType(UnDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Типы самолетов")
-        self._table = PlaneTypesTable(self)
-        self._model = PlanesTypesModel(self)
-        self._table.setModel(self._model)
-        self._model.load_data()
-        self.main_layout.insertWidget(0, self._table)
+        self.table = PlaneTypesTable(self)
+        self.table.edit_signal.connect(self.edit_item)
+        self.table.delete_signal.connect(self.delete_item)
+        self.main_layout.insertWidget(0, self.table)
 
     def add_item(self):
         dialog = AddPlaneType()
         if dialog.exec():
             self.updated.emit()
-            self._model.load_data()
+            self.refresh_data()
 
-    def refresh_data(self):
-        self._model.load_data()
+    def edit_item(self, item_id):
+        dialog = AddPlaneType(data=item_id)
+        if dialog.exec():
+            self.refresh_data()
+
+    def delete_item(self, item_id):
+        item = TypeBase.get_by_id(item_id)
+        self.table.table_model.delete_item(item)
+        self.refresh_data()
+        self.refresh_data()
 
 
 class SettingsPodrazd(UnDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Подразделения")
-        self._table = PodrazdTable(self)
-        self._model = PodrazdModel(self)
-        self._table.setModel(self._model)
-        self._model.load_data()
-        self.main_layout.insertWidget(0, self._table)
+        self.table = PodrazdTable()
+        self.table.edit_signal.connect(self.edit_item)
+        self.table.delete_signal.connect(self.delete_item)
+        self.main_layout.insertWidget(0, self.table)
 
     def add_item(self):
         dialog = AddPodrazd()
@@ -66,19 +76,25 @@ class SettingsPodrazd(UnDialog):
             self.updated.emit()
         self._model.load_data()
 
-    def refresh_data(self):
-        self._model.load_data()
+    def edit_item(self, item_id):
+        dialog = AddPodrazd(data=item_id)
+        if dialog.exec():
+            self.refresh_data()
+
+    def delete_item(self, item_id):
+        item = PodrazdBase.get_by_id(item_id)
+        self.table.table_model.delete_item(item)
+        self.refresh_data()
 
 
 class SettingsGroup(UnDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Группы обслуживания")
-        self._table = GroupTable(self)
-        self._model = GroupModel(self)
-        self._table.setModel(self._model)
-        self._model.load_data()
-        self.main_layout.insertWidget(0, self._table)
+        self.table = GroupTable(self)
+        self.table.edit_signal.connect(self.edit_item)
+        self.table.delete_signal.connect(self.delete_item)
+        self.main_layout.insertWidget(0, self.table)
 
     def add_item(self):
         dialog = AddGroup()
@@ -86,44 +102,53 @@ class SettingsGroup(UnDialog):
             self.updated.emit()
             self._model.load_data()
 
-    def refresh_data(self):
-        self._model.load_data()
+    def edit_item(self, item_id):
+        dialog = AddGroup(data=item_id)
+        if dialog.exec():
+            self.refresh_data()
+
+    def delete_item(self, item_id):
+        item = GroupBase.get_by_id(item_id)
+        self.table.table_model.delete_item(item)
+        self.refresh_data()
 
 
 class SettingsAgregate(UnDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Блоки/Агрегаты")
-        self._table = AgregateTable(self)
-        self._model = AgregateModel(self)
-        self._table.setModel(self._model)
-        self._model.load_data()
+        self.table = AgregateTable()
+        self.table.edit_signal.connect(self.edit_item)
+        self.table.delete_signal.connect(self.delete_item)
         self.plane_type_combo = PlaneTypeComboBox()
         self.group_combo = GroupComboBox()
         self.system_combo = SystemComboBox()
 
-        self.plane_type_combo.currentTextChanged.connect(
-            lambda x: self.group_combo.set_filter(GroupBase
-                                                  .select()
-                                                  .where(GroupBase.plane_type == self.plane_type_combo.currentData())
-                                                  )
-        )
-        self.plane_type_combo.currentTextChanged.connect(
-            lambda x: self._model.load_data(filter_type=self.plane_type_combo.currentData())
-        )
-        self.group_combo.currentTextChanged.connect(
-            lambda x: self.system_combo.load_data(self.group_combo.currentData())
-        )
-        self.group_combo.currentTextChanged.connect(
-            lambda x: self._model.load_data(filter_group=self.group_combo.currentData())
-        )
+        self.plane_type_combo.currentTextChanged.connect(self.group_combo.set_filter)
+        self.group_combo.currentTextChanged.connect(self.system_combo.set_filter)
         self.system_combo.currentTextChanged.connect(
-            lambda x: self._model.load_data(filter_system=self.system_combo.currentData())
+            lambda x: self.table.table_model.load_data(filter_system=self.system_combo.currentData())
         )
         self.main_layout.insertWidget(0, self.plane_type_combo)
         self.main_layout.insertWidget(1, self.group_combo)
         self.main_layout.insertWidget(2, self.system_combo)
-        self.main_layout.insertWidget(3, self._table)
+        self.main_layout.insertWidget(3, self.table)
+
+    def edit_item(self, item_id):
+        dialog = AddAgregate(data=item_id)
+        if dialog.exec():
+            self.update_data(dialog)
+
+    def delete_item(self, item_id):
+        item = AgregateBase.get_by_id(item_id)
+        self.table.table_model.delete_item(item)
+        self.refresh_data()
+
+    def update_data(self, dialog):
+        self.plane_type_combo.setCurrentText(dialog.type_combo.currentText())
+        self.group_combo.setCurrentText(dialog.group_combo.currentText())
+        self.system_combo.setCurrentText(dialog.system_combo.currentText())
+        self._model.load_data(filter_system=self.system_combo.currentData())
 
     def add_item(self):
         if self.system_combo.currentData():
@@ -139,14 +164,12 @@ class SettingsAgregate(UnDialog):
             dialog = AddAgregate()
 
         if dialog.exec():
-            self.updated.emit()
+            self.update_data(dialog)
 
-        self.plane_type_combo.setCurrentText(dialog.type_combo.currentText())
-        self.group_combo.setCurrentText(dialog.group_combo.currentText())
-        self.system_combo.setCurrentText(dialog.system_combo.currentText())
-
-        self._model.load_data(filter_system=self.system_combo.currentData())
         # self._model.load_data()
+
+    def refresh_data(self):
+        self.table.table_model.load_data()
 
 
 class SettingsPlanes(UnDialog):
@@ -160,8 +183,9 @@ class SettingsPlanes(UnDialog):
         self.setWindowTitle('Список самолетов')
 
 
-
 class UnAddEditDialog(QDialog):
+    updated = pyqtSignal()
+
     def __init__(self, data=None, parent=None):
         super().__init__(parent)
         self._data = data
@@ -278,12 +302,8 @@ class AddAgregate(UnAddEditDialog):
         self.system_combo = SystemComboBox()
         self.agregate_name = QLineEdit()
 
-        self.type_combo.currentTextChanged.connect(
-            lambda x: self.group_combo.load_data(self.type_combo.currentData())
-        )
-        self.group_combo.currentTextChanged.connect(
-            lambda x: self.system_combo.load_data(self.group_combo.currentData())
-        )
+        self.type_combo.currentTextChanged.connect(self.group_combo.set_filter)
+        self.group_combo.currentTextChanged.connect(self.system_combo.set_filter)
 
         if system:
             self.type_combo.setCurrentText(SystemBase.get_by_id(system).group.plane_type.name)
@@ -295,7 +315,7 @@ class AddAgregate(UnAddEditDialog):
         elif plane_type:
             self.type_combo.setCurrentText(TypeBase.get_by_id(plane_type).name)
 
-        if self._data:
+        if data:
             self.item = AgregateBase.get_by_id(data)
         self.config_ui()
 
@@ -307,10 +327,10 @@ class AddAgregate(UnAddEditDialog):
         self.form_layout.addRow('Название блока/агрегата:', self.agregate_name)
 
         if self._data:
-            self.type_combo.setCurrentText(item.system.group.plane_type.name)
-            self.group_combo.setCurrentText(item.system.group.name)
-            self.system_combo.setCurrentText(item.system.name)
-            self.agregate_name.setText(item.name)
+            self.type_combo.setCurrentText(self.item.system.group.plane_type.name)
+            self.group_combo.setCurrentText(self.item.system.group.name)
+            self.system_combo.setCurrentText(self.item.system.name)
+            self.agregate_name.setText(self.item.name)
 
     def add_item(self):
         if self._data:

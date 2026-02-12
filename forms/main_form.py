@@ -47,6 +47,9 @@ class MainForm(QMainWindow):
         main_layout.addWidget(self.frame, stretch=8)
         self.central_widget.setLayout(main_layout)
 
+    def osob_dialog(self):
+        pass
+
     def plane_type_dialog(self):
         dialog = SettingsPlaneType(self)
         dialog.exec()

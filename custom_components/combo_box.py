@@ -15,9 +15,11 @@ class ComboBoxModel(QAbstractListModel):
         self.load_data()
 
     def load_data(self):
-        query = self._peewee_model.select()
-        if self.query_filter:
-            query = query.where(self.query_filter)
+        self._data = []
+        if self.query_filter is not None:
+            query = self.query_filter
+        else:
+            query = self._peewee_model.select()
         self._data = list(query)
         if self._first_string:
             self._data.insert(0, self._first_string)
@@ -56,15 +58,14 @@ class PlaneTypeComboBox(QComboBox):
 class GroupComboBox(QComboBox):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self._peewee_model = GroupBase
         self._model = ComboBoxModel(peewee_model=GroupBase, first_string='Выберите группу обслуживания')
         self.setModel(self._model)
 
-    def set_filter(self, value):
-        item = self._peewee_model.get_or_none(self._peewee_model.name == value)
-        query = (self._peewee_model
+    def set_filter(self, plane_type_str):
+        plane_type = TypeBase.get_or_none(TypeBase.name == plane_type_str)
+        query = (GroupBase
                  .select()
-                 .where(self._peewee_model.plane_type == item)
+                 .where(GroupBase.plane_type == plane_type)
                  )
         self._model.query_filter = query
         self._model.refresh()
@@ -93,7 +94,7 @@ class AgregateComboBox(QComboBox):
         self.setModel(self._model)
 
     def set_filter(self, system_str):
-        system = TypeBase.get_or_none(TypeBase.name == system_str)
+        system = SystemBase.get_or_none(SystemBase.name == system_str)
         query = (AgregateBase
                  .select()
                  .where(AgregateBase.system == system)

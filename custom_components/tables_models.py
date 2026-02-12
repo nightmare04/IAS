@@ -125,6 +125,7 @@ class UnTableModel(QAbstractTableModel):
         self._data = []
         self._headers = []
         self._items_ids = []
+        self.load_data()
 
     def load_data(self):
         """Method for data loading."""
@@ -175,7 +176,7 @@ class PlanesTypesModel(UnTableModel):
         query = TypeBase.select()
         for data in query:
             self._data.append([data.name])
-            self._items_ids.append([data.id])
+            self._items_ids.append(data.id)
         self.endResetModel()
 
     @staticmethod
@@ -195,7 +196,7 @@ class PodrazdModel(UnTableModel):
         query = PodrazdBase.select()
         for data in query:
             self._data.append([data.name])
-            self._items_ids.append([data.id])
+            self._items_ids.append(data.id)
         self.endResetModel()
 
     @staticmethod
@@ -215,7 +216,7 @@ class GroupModel(UnTableModel):
         query = GroupBase.select()
         for data in query:
             self._data.append([data.name, data.plane_type.name])
-            self._items_ids.append([data.id])
+            self._items_ids.append(data.id)
         self.endResetModel()
 
     @staticmethod
@@ -253,7 +254,7 @@ class AgregateModel(UnTableModel):
 
         for data in query:
             self._data.append([data.system.group.name, data.system.name, data.name])
-            self._items_ids.append([data.id])
+            self._items_ids.append(data.id)
         self.endResetModel()
 
     @staticmethod
@@ -279,7 +280,7 @@ class PlanesModel(UnTableModel):
 
         for data in query:
             self._data.append([data.plane_type, data.podrazd.name, data.bort_num])
-            self._items_ids.append([data.id])
+            self._items_ids.append(data.id)
         self.endResetModel()
 
     @staticmethod

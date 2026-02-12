@@ -1,16 +1,21 @@
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSignal, QObject
 from PyQt6.QtGui import QAction
 from PyQt6.QtWidgets import QTableView, QAbstractItemView, QSizePolicy, QHeaderView, QMessageBox, QMenu
 
-from custom_components.tables_models import IspravnostTableModel, UnTableModel
+from custom_components.tables_models import IspravnostTableModel, UnTableModel, PlanesTypesModel, PodrazdModel, \
+    GroupModel, AgregateModel, PlanesModel
 from data.data import OtkazAgregateBase
 from forms.otkaz_dialog import EditOtkazDialog
 
 
 class UnTableView(QTableView):
+    edit_signal = pyqtSignal(int)
+    delete_signal = pyqtSignal(int)
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.parent = parent
+        self.table_model = UnTableModel()
         self.setAlternatingRowColors(False)
         self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding))
@@ -38,10 +43,10 @@ class UnTableView(QTableView):
         menu.exec(self.viewport().mapToGlobal(position))
 
     def edit_item(self, item_id):
-        pass
+        self.edit_signal.emit(item_id)
 
     def delete_item(self, item_id):
-        pass
+        self.delete_signal.emit(item_id)
 
 
 class IspravnostTableView(UnTableView):
@@ -105,104 +110,33 @@ class IspravnostTableView(UnTableView):
 class PlaneTypesTable(UnTableView):
     def __init__(self, parent=None):
         super().__init__(parent)
-
-    def edit_item(self, item_id):
-        from forms.settings import AddPlaneType
-
-        dialog = AddPlaneType(data=item_id, parent=self.parent)
-        dialog.exec()
-        if hasattr(self.parent, 'refresh_data') and callable(self.parent.refresh_data):
-            try:
-                self.parent.refresh_data()
-            except Exception:
-                pass
-
-    def delete_item(self, item_id):
-        from data.data import TypeBase
-        item = TypeBase.get_by_id(item_id)
-        item.delete_instance()
-        if hasattr(self.parent, 'refresh_data') and callable(self.parent.refresh_data):
-            try:
-                self.parent.refresh_data()
-            except Exception:
-                pass
+        self.table_model = PlanesTypesModel()
+        self.setModel(self.table_model)
 
 
 class PodrazdTable(UnTableView):
     def __init__(self, parent=None):
         super().__init__(parent)
-
-    def delete_item(self, item_id):
-        self.model().delete_item(item_id)
-        self.parent.refresh_data()
-
-    def edit_item(self, item_id):
-        from forms.settings import AddPodrazd
-
-        dialog = AddPodrazd(data=item_id, parent=self.parent)
-        dialog.exec()
-        if hasattr(self.parent, 'refresh_data') and callable(self.parent.refresh_data):
-            try:
-                self.parent.refresh_data()
-            except Exception:
-                pass
+        self.table_model = PodrazdModel()
+        self.setModel(self.table_model)
 
 
 class GroupTable(UnTableView):
     def __init__(self, parent=None):
         super().__init__(parent)
-
-    def delete_item(self, item_id):
-        self.model().delete_item(item_id)
-        self.parent.refresh_data()
-
-    def edit_item(self, item_id):
-        from forms.settings import AddGroup
-
-        dialog = AddGroup(data=item_id, parent=self.parent)
-        dialog.exec()
-        if hasattr(self.parent, 'refresh_data') and callable(self.parent.refresh_data):
-            try:
-                self.parent.refresh_data()
-            except Exception:
-                pass
+        self.table_model = GroupModel()
+        self.setModel(self.table_model)
 
 
 class AgregateTable(UnTableView):
     def __init__(self, parent=None):
         super().__init__(parent)
-
-    def delete_item(self, item_id):
-        self.model().delete_item(item_id)
-        self.parent.refresh_data()
-
-    def edit_item(self, item_id):
-        from forms.settings import AddAgregate
-        dialog = AddAgregate(data=item_id, parent=self.parent)
-        dialog.exec()
-        if hasattr(self.parent, 'refresh_data') and callable(self.parent.refresh_data):
-            try:
-                self.parent.refresh_data()
-            except Exception:
-                pass
+        self.table_model = AgregateModel()
+        self.setModel(self.table_model)
 
 
 class PlanesTable(UnTableView):
     def __init__(self, parent=None):
         super().__init__(parent)
-
-    def delete_item(self, item_id):
-        self.model().delete_item(item_id)
-        self.parent.refresh_data()
-
-    def edit_item(self, item_id):
-        from forms.settings import AddPlane
-        dialog = AddPlane(data=item_id, parent=self.parent)
-        dialog.exec()
-        if hasattr(self.parent, 'refresh_data') and callable(self.parent.refresh_data):
-            try:
-                self.parent.refresh_data()
-            except Exception:
-                pass
-
-
+        self.table_model = PlanesModel()
+        self.setModel(self.table_model)
