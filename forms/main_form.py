@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import (
 
 from custom_components.buttons import IASButton
 from forms.plane_ispravnost import IspravnostFrame
-from forms.settings import SettingsPlaneType, SettingsPodrazd, SettingsGroup, SettingsAgregate
+from forms.settings import SettingsPlaneType, SettingsPodrazd, SettingsGroup, SettingsAgregate, SettingsPlanes
 
 
 class MainForm(QMainWindow):
@@ -69,7 +69,7 @@ class MainForm(QMainWindow):
         dialog.exec()
 
     def planes_dialog(self):
-        dialog = SettingsPlanes(self)
+        dialog = SettingsPlanes()
         dialog.updated.connect(self.frame.update_planes)
         dialog.exec()
 

@@ -1,11 +1,10 @@
 from PyQt6.QtCore import pyqtSignal, pyqtSlot
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QPushButton, QHBoxLayout, QFormLayout, QLineEdit
 
-from custom_components.combo_box import PlaneTypeComboBox, SystemComboBox, GroupComboBox
-from custom_components.tables_models import PlanesTypesModel, PodrazdModel, GroupModel, AgregateModel, PlanesModel, \
-    UnTableModel
+from custom_components.combo_box import PlaneTypeComboBox, SystemComboBox, GroupComboBox, PodrazdComboBox
+
 from custom_components.tables import PlaneTypesTable, PodrazdTable, \
-    GroupTable, AgregateTable, UnTableView
+    GroupTable, AgregateTable, UnTableView, PlanesTable
 from data.data import TypeBase, PodrazdBase, GroupBase, AgregateBase, SystemBase, PlaneBase
 
 
@@ -74,7 +73,7 @@ class SettingsPodrazd(UnDialog):
         dialog = AddPodrazd()
         if dialog.exec():
             self.updated.emit()
-        self._model.load_data()
+        self.refresh_data()
 
     def edit_item(self, item_id):
         dialog = AddPodrazd(data=item_id)
@@ -100,7 +99,7 @@ class SettingsGroup(UnDialog):
         dialog = AddGroup()
         if dialog.exec():
             self.updated.emit()
-            self._model.load_data()
+            self.refresh_data()
 
     def edit_item(self, item_id):
         dialog = AddGroup(data=item_id)
@@ -173,14 +172,29 @@ class SettingsAgregate(UnDialog):
 
 
 class SettingsPlanes(UnDialog):
-    def __init__(self, data=None, parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
-        self.type_combo = PlaneTypeComboBox()
-        self._table = PlaneTable()
-        self._model = PlanesModel()
+        self.setWindowTitle("Самолеты")
+        self.table = PlanesTable()
+        self.table.edit_signal.connect(self.edit_item)
+        self.table.delete_signal.connect(self.delete_item)
+        self.main_layout.insertWidget(0, self.table)
 
-    def config_ui(self):
-        self.setWindowTitle('Список самолетов')
+    def add_item(self):
+        dialog = AddPlane()
+        if dialog.exec():
+            self.updated.emit()
+            self.refresh_data()
+
+    def edit_item(self, item_id):
+        dialog = AddPlane(data=item_id)
+        if dialog.exec():
+            self.refresh_data()
+
+    def delete_item(self, item_id):
+        item = PlaneBase.get_by_id(item_id)
+        self.table.table_model.delete_item(item)
+        self.refresh_data()
 
 
 class UnAddEditDialog(QDialog):
@@ -188,6 +202,7 @@ class UnAddEditDialog(QDialog):
 
     def __init__(self, data=None, parent=None):
         super().__init__(parent)
+        self.item = None
         self._data = data
         self.setModal(True)
         self.setFixedWidth(400)
@@ -347,27 +362,38 @@ class AddPlane(UnAddEditDialog):
     def __init__(self, data=None, parent=None):
         super().__init__(data, parent)
         self.type_combo = PlaneTypeComboBox()
-        self.bort_num = QLineEdit()
+        self.podrazd = PodrazdComboBox()
+        self.bort_number = QLineEdit()
         self.zav_num = QLineEdit()
-
-        if self._data:
-            self.item = PlaneBase.get_by_id(data)
         self.config_ui()
 
     def config_ui(self):
         self.setWindowTitle("Добавить самолет")
         self.form_layout.addRow("Тип самолета", self.type_combo)
-        self.form_layout.addRow('Название группы', self.group)
-        if self._data:
-            self.group.setText(self.item.name)
-            self.type_combo.setCurrentText(self.item.plane_type.name)
+        self.form_layout.addRow('Подразделение:', self.podrazd)
+        self.form_layout.addRow('Бортовой номер:', self.bort_number)
+        self.form_layout.addRow('Заводской номер:', self.zav_num)
+
+    @pyqtSlot(int)
+    def edit_item(self, item_id):
+        self.setWindowTitle('Редактировать самолет')
+        self.item = PlaneBase.get_by_id(item_id)
+        self.type_combo.setCurrentText(self.item.plane_type.name)
+        self.self.podrazd.setText(self.item.podrazd.name)
+        self.bort_number.setText(self.item.bort_number)
+        self.zav_num.setText(self.item.zav_num)
 
     def add_item(self):
-        if self._data:
-            self.item.name = self.group.text()
+        if self.item:
             self.item.plane_type = self.type_combo.currentData()
+            self.item.podrazd = self.podrazd.currentData()
+            self.item.bort_number = self.bort_number.text()
+            self.item.zav_num = self.zav_num.text()
             self.item.save()
             self.accept()
         else:
-            GroupBase.create(name=self.group.text(), plane_type=self.type_combo.currentData())
+            PlaneBase.create(plane_type=self.type_combo.currentData(),
+                             podrazd=self.podrazd.currentData(),
+                             bort_number=self.bort_number.text(),
+                             zav_num=self.zav_num.text())
             self.accept()

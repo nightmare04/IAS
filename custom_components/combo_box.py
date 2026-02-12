@@ -55,6 +55,13 @@ class PlaneTypeComboBox(QComboBox):
         self.setModel(self._model)
 
 
+class PodrazdComboBox(QComboBox):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._model = ComboBoxModel(peewee_model=PodrazdBase, first_string='Выберите подразделение')
+        self.setModel(self._model)
+
+
 class GroupComboBox(QComboBox):
     def __init__(self, parent=None):
         super().__init__(parent)

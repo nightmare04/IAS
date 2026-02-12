@@ -279,7 +279,7 @@ class PlanesModel(UnTableModel):
             query = PlaneBase.select()
 
         for data in query:
-            self._data.append([data.plane_type, data.podrazd.name, data.bort_num])
+            self._data.append([data.plane_type.name, data.podrazd.name, data.bort_number])
             self._items_ids.append(data.id)
         self.endResetModel()
 
