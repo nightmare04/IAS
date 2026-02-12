@@ -1,7 +1,7 @@
 from PyQt6.QtCore import QAbstractTableModel, QModelIndex, Qt
 from PyQt6.QtGui import QFont, QBrush, QColor
 
-from data.data import TypeBase, PodrazdBase, GroupBase, OtkazAgregateBase, AgregateBase, SystemBase
+from data.data import TypeBase, PodrazdBase, GroupBase, OtkazAgregateBase, AgregateBase, SystemBase, PlaneBase
 
 
 class IspravnostTableModel(QAbstractTableModel):
@@ -259,4 +259,30 @@ class AgregateModel(UnTableModel):
     @staticmethod
     def delete_item(item_id):
         item = AgregateBase.get_by_id(item_id)
+        item.delete_instance()
+
+
+class PlanesModel(UnTableModel):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def load_data(self, filter_type=None, filter_group=None, filter_system=None):
+        self.beginResetModel()
+        self.clear_data()
+        self._headers = ["Тип самолета", "Подразделение", "Бортовой номер"]
+
+        if filter_type:
+            query = (PlaneBase.select()
+                     .where(PlaneBase.plane_type == filter_type))
+        else:
+            query = PlaneBase.select()
+
+        for data in query:
+            self._data.append([data.plane_type, data.podrazd.name, data.bort_num])
+            self._items_ids.append([data.id])
+        self.endResetModel()
+
+    @staticmethod
+    def delete_item(item_id):
+        item = PlaneBase.get_by_id(item_id)
         item.delete_instance()

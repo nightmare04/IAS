@@ -2,10 +2,10 @@ import datetime
 
 from peewee import *
 
-
 db = SqliteDatabase('./data/database.db', pragmas={'foreign_keys': 1})
 
-def get_systems_for_plane(plane:PlaneBase, group:GroupBase=None) -> list[SystemBase]:
+
+def get_systems_for_plane(plane: PlaneBase, group: GroupBase = None) -> list[SystemBase]:
     osob_list = OsobPlaneBase.select().where(OsobPlaneBase.plane == plane)
     systems = (SystemBase
                .select()
@@ -26,6 +26,31 @@ def get_systems_for_plane(plane:PlaneBase, group:GroupBase=None) -> list[SystemB
     if group:
         systems = systems.where(SystemBase.group == group)
     return systems
+
+
+def get_agregates_for_plane(plane: PlaneBase, system: SystemBase = None) -> list[AgregateBase]:
+    osob_list = OsobPlaneBase.select().where(OsobPlaneBase.plane == plane)
+    agregates = (AgregateBase
+                 .select()
+                 .where(AgregateBase.system.plane_type == plane.id)
+                 .where(AgregateBase.id.not_in(OsobAgregateAddBase
+                                               .select(OsobAgregateAddBase.agregate)
+                                               .where(OsobAgregateAddBase.agregate.system.plane_type == plane.plane_type)))
+                 .where(AgregateBase.id.not_in(OsobAgregateRemoveBase
+                                               .select(OsobAgregateRemoveBase.agregate)
+                                               .where(OsobAgregateRemoveBase.osob << osob_list)))
+                 .switch(AgregateBase)
+                 .union(AgregateBase
+                        .select()
+                        .join(OsobAgregateAddBase)
+                        .where(OsobAgregateAddBase.agregate.system.plane_type == plane.plane_type)
+                        .where(OsobAgregateAddBase.osob << osob_list)
+                        )
+                 )
+    if system:
+        agregates = agregates.where(AgregateBase.system == system)
+    return agregates
+
 
 class BaseModel(Model):
     id = IntegerField(primary_key=True)
@@ -79,19 +104,27 @@ class OsobPlaneBase(BaseModel):
 
 class OsobSystemAddBase(BaseModel):
     osob = ForeignKeyField(OsobTypeBase, backref='systems_to_add')
-    system = ForeignKeyField(SystemBase, backref='systems_to_add')
+    system = ForeignKeyField(SystemBase)
 
 
 class OsobSystemRemoveBase(BaseModel):
     osob = ForeignKeyField(OsobTypeBase, backref='systems_to_remove')
-    system = ForeignKeyField(SystemBase, backref='systems_to_remove')
+    system = ForeignKeyField(SystemBase)
+
+
+class OsobAgregateAddBase(BaseModel):
+    osob = ForeignKeyField(OsobTypeBase, backref='agregates_to_add')
+    agregate = ForeignKeyField(AgregateBase)
+
+
+class OsobAgregateRemoveBase(BaseModel):
+    osob = ForeignKeyField(OsobTypeBase, backref='agregates_to_remove')
+    agregate = ForeignKeyField(AgregateBase)
 
 
 class OtkazAgregateBase(BaseModel):
     agregate = ForeignKeyField(AgregateBase, backref='otkaz_agregates')
-    plane = ForeignKeyField(PlaneBase , backref='otkaz_agregates')
+    plane = ForeignKeyField(PlaneBase, backref='otkaz_agregates')
     description = CharField(unique=False, default='')
     number = CharField()
     removed = BooleanField(default=False)
-
-

@@ -3,6 +3,7 @@ from PyQt6.QtWidgets import QComboBox
 
 from data.data import TypeBase, GroupBase, SystemBase, AgregateBase
 
+
 class ComboBoxModel(QAbstractListModel):
     def __init__(self, peewee_model=None, first_string=None, display_field='name', parent=None):
         super().__init__(parent)
@@ -44,10 +45,11 @@ class ComboBoxModel(QAbstractListModel):
         self.load_data()
         self.endResetModel()
 
+
 class PlaneTypeComboBox(QComboBox):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self._model = ComboBoxModel(peewee_model=TypeBase.select(), first_string='Выберите тип самолета')
+        self._model = ComboBoxModel(peewee_model=TypeBase, first_string='Выберите тип самолета')
         self.setModel(self._model)
 
 
@@ -55,8 +57,7 @@ class GroupComboBox(QComboBox):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._peewee_model = GroupBase
-        self._filter_field =
-        self._model = ComboBoxModel(peewee_model=GroupBase.select(), first_string='Выберите группу обслуживания')
+        self._model = ComboBoxModel(peewee_model=GroupBase, first_string='Выберите группу обслуживания')
         self.setModel(self._model)
 
     def set_filter(self, value):
@@ -68,10 +69,11 @@ class GroupComboBox(QComboBox):
         self._model.query_filter = query
         self._model.refresh()
 
+
 class SystemComboBox(QComboBox):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self._model = ComboBoxModel(peewee_model=SystemBase.select(), first_string='Выберите систему самолета')
+        self._model = ComboBoxModel(peewee_model=SystemBase, first_string='Выберите систему самолета')
         self.setModel(self._model)
 
     def set_filter(self, group_str):
@@ -83,10 +85,11 @@ class SystemComboBox(QComboBox):
         self._model.query_filter = query
         self._model.refresh()
 
+
 class AgregateComboBox(QComboBox):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self._model = ComboBoxModel(peewee_model=AgregateBase.select(), first_string='Выберите блок/агрегат самолета')
+        self._model = ComboBoxModel(peewee_model=AgregateBase, first_string='Выберите блок/агрегат самолета')
         self.setModel(self._model)
 
     def set_filter(self, system_str):

@@ -16,6 +16,8 @@ class MainForm(QMainWindow):
         settings_menu = self.menu.addMenu("&Настройки")
         type_action = QAction('Типы самолетов', self)
         type_action.triggered.connect(self.plane_type_dialog)
+        osob_action = QAction('Особенности самолетов', self)
+        osob_action.triggered.connect(self.osob_dialog)
         podr_action = QAction('Подразделения', self)
         podr_action.triggered.connect(self.podr_dialog)
         group_action = QAction('Группы обслуживания', self)
@@ -40,29 +42,32 @@ class MainForm(QMainWindow):
 
         self.frame = IspravnostFrame()
         main_layout = QHBoxLayout()
-        button_panel = self.create_button_panel()
-        main_layout.addWidget(button_panel, stretch=2)
+        # button_panel = self.create_button_panel()
+        # main_layout.addWidget(button_panel, stretch=2)
         main_layout.addWidget(self.frame, stretch=8)
         self.central_widget.setLayout(main_layout)
 
     def plane_type_dialog(self):
-        dialog = SettingsPlaneType()
+        dialog = SettingsPlaneType(self)
         dialog.exec()
 
+
     def podr_dialog(self):
-        dialog = SettingsPodrazd()
+        dialog = SettingsPodrazd(self)
+        dialog.updated.connect(self.frame.update_podr)
         dialog.exec()
 
     def group_dialog(self):
-        dialog = SettingsGroup()
+        dialog = SettingsGroup(self)
         dialog.exec()
 
     def agregate_dialog(self):
-        dialog = SettingsAgregate()
+        dialog = SettingsAgregate(self)
         dialog.exec()
 
     def planes_dialog(self):
-        dialog = SettingsPlanes()
+        dialog = SettingsPlanes(self)
+        dialog.updated.connect(self.frame.update_planes)
         dialog.exec()
 
     def create_button_panel(self) -> QWidget:

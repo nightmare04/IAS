@@ -8,21 +8,22 @@ from custom_components.tables import IspravnostTableModel, IspravnostTableView
 from data.data import PlaneBase, GroupBase, OtkazAgregateBase, AgregateBase, SystemBase, PodrazdBase
 from forms.otkaz_dialog import AddOtkazDialog, EditOtkazDialog
 
+
 class IspravnostFrame(QFrame):
     def __init__(self):
         super().__init__()
+        self.podr_layout = QGridLayout()
+        self.setLayout(self.podr_layout)
         self.load_data()
 
     def load_data(self):
         podr_data = PodrazdBase.select()
-        podr_layout = QGridLayout()
         for i, podr in enumerate(podr_data):
             group = PodrGroup(podr)
             group.load_planes()
             row = i // 2
             col = i % 2
-            podr_layout.addWidget(group, row, col)
-        self.setLayout(podr_layout)
+            self.podr_layout.addWidget(group, row, col)
 
     def clear_layout(self, layout):
         while layout.count():
@@ -36,7 +37,11 @@ class IspravnostFrame(QFrame):
                 if sublayout is not None:
                     self.clear_layout(sublayout)
 
-    def update_ispravnost(self):
+    def update_podr(self):
+        self.clear_layout(self.podr_layout)
+        self.load_data()
+
+    def update_planes(self):
         for plane_bnt in self.findChildren(PlaneBtn):
             plane_bnt.update_color()
 
@@ -92,7 +97,6 @@ class PlaneIspravnost(QDialog):
         dialog = AddOtkazDialog(self.plane)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             self.refresh_data()
-
 
     def refresh_data(self):
         self.load_data()

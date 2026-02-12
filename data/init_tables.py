@@ -2,9 +2,11 @@ from peewee import SqliteDatabase
 
 from data.example import example_data
 from data.data import PlaneBase, SystemBase, TypeBase, OtkazAgregateBase, PodrazdBase, GroupBase, \
-    AgregateBase, OsobSystemRemoveBase, OsobPlaneBase, OsobSystemAddBase, OsobTypeBase
+    AgregateBase, OsobSystemRemoveBase, OsobPlaneBase, OsobSystemAddBase, OsobTypeBase, OsobAgregateAddBase, \
+    OsobAgregateRemoveBase
 
 db = SqliteDatabase('./data/database.db', pragmas={'foreign_keys': 1})
+
 
 def create_tables():
     with db:
@@ -13,9 +15,11 @@ def create_tables():
                 PlaneBase, SystemBase, TypeBase,
                 OtkazAgregateBase,
                 PodrazdBase, GroupBase, AgregateBase,
-                OsobSystemRemoveBase, OsobPlaneBase, OsobSystemAddBase, OsobTypeBase
+                OsobSystemRemoveBase, OsobPlaneBase, OsobSystemAddBase, OsobTypeBase,
+                OsobAgregateAddBase, OsobAgregateRemoveBase
             ]
         )
+
 
 def drop_tables():
     with db:
@@ -24,9 +28,11 @@ def drop_tables():
                 PlaneBase, SystemBase, TypeBase,
                 OtkazAgregateBase,
                 PodrazdBase, GroupBase, AgregateBase,
-                OsobSystemRemoveBase, OsobPlaneBase, OsobSystemAddBase, OsobTypeBase
+                OsobSystemRemoveBase, OsobPlaneBase, OsobSystemAddBase, OsobTypeBase,
+                OsobAgregateAddBase, OsobAgregateRemoveBase
             ]
         )
+
 
 def fill_tables():
     example_data()
