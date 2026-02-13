@@ -1,7 +1,7 @@
 from PyQt6.QtCore import QAbstractListModel, Qt
 from PyQt6.QtWidgets import QComboBox
 
-from data.data import TypeBase, GroupBase, SystemBase, AgregateBase
+from data.data import TypeBase, GroupBase, SystemBase, AgregateBase, PodrazdBase
 
 
 class ComboBoxModel(QAbstractListModel):

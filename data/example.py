@@ -1,7 +1,7 @@
 from peewee import SqliteDatabase
 
 from data.data import TypeBase, GroupBase, SystemBase, PodrazdBase, PlaneBase, AgregateBase, \
-    OtkazAgregateBase, OsobSystemRemoveBase, OsobPlaneBase, OsobSystemAddBase, OsobTypeBase
+    OtkazAgregateBase, OsobSystemRemoveBase, OsobPlaneBase, OsobSystemAddBase, OsobBase
 
 db = SqliteDatabase('./data/database.db', pragmas={'foreign_keys': 1})
 
@@ -107,7 +107,7 @@ def example_data():
         for otkaz in otkaz_agr_data:
             OtkazAgregateBase.create(**otkaz)
         for data in osobs_data:
-            OsobTypeBase.create(**data)
+            OsobBase.create(**data)
         for data in osob_plane_data:
             OsobPlaneBase.create(**data)
         for data in system_add_data:

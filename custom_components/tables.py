@@ -3,7 +3,7 @@ from PyQt6.QtGui import QAction
 from PyQt6.QtWidgets import QTableView, QAbstractItemView, QSizePolicy, QHeaderView, QMessageBox, QMenu
 
 from custom_components.tables_models import IspravnostTableModel, UnTableModel, PlanesTypesModel, PodrazdModel, \
-    GroupModel, AgregateModel, PlanesModel
+    GroupModel, AgregateModel, PlanesModel, OsobModel
 from data.data import OtkazAgregateBase
 from forms.otkaz_dialog import EditOtkazDialog
 
@@ -139,4 +139,11 @@ class PlanesTable(UnTableView):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.table_model = PlanesModel()
+        self.setModel(self.table_model)
+
+
+class OsobTable(UnTableView):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.table_model = OsobModel()
         self.setModel(self.table_model)

@@ -70,11 +70,10 @@ class MainForm(QMainWindow):
 
     def planes_dialog(self):
         dialog = SettingsPlanes()
-        dialog.updated.connect(self.frame.update_planes)
+        dialog.updated.connect(self.frame.update_podr)
         dialog.exec()
 
     def create_button_panel(self) -> QWidget:
-        """Создание панели кнопок"""
         panel = QWidget()
         layout = QVBoxLayout()
 

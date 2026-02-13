@@ -4,7 +4,8 @@ from PyQt6.QtWidgets import QDialog, QVBoxLayout, QPushButton, QHBoxLayout, QFor
 from custom_components.combo_box import PlaneTypeComboBox, SystemComboBox, GroupComboBox, PodrazdComboBox
 
 from custom_components.tables import PlaneTypesTable, PodrazdTable, \
-    GroupTable, AgregateTable, UnTableView, PlanesTable
+    GroupTable, AgregateTable, UnTableView, PlanesTable, OsobTable
+from custom_components.tables_models import OsobModel
 from data.data import TypeBase, PodrazdBase, GroupBase, AgregateBase, SystemBase, PlaneBase
 
 
@@ -29,6 +30,12 @@ class UnDialog(QDialog):
     def add_item(self):
         pass
 
+    def edit_item(self, item_id):
+        pass
+
+    def delete_item(self, item_id):
+        pass
+
     def refresh_data(self):
         self.table.table_model.load_data()
 
@@ -44,19 +51,17 @@ class SettingsPlaneType(UnDialog):
 
     def add_item(self):
         dialog = AddPlaneType()
-        if dialog.exec():
-            self.updated.emit()
-            self.refresh_data()
+        dialog.updated.connect(self.refresh_data)
+        dialog.add_dialog()
 
     def edit_item(self, item_id):
-        dialog = AddPlaneType(data=item_id)
-        if dialog.exec():
-            self.refresh_data()
+        dialog = AddPlaneType()
+        dialog.updated.connect(self.refresh_data)
+        dialog.edit_dialog(item_id)
 
     def delete_item(self, item_id):
         item = TypeBase.get_by_id(item_id)
         self.table.table_model.delete_item(item)
-        self.refresh_data()
         self.refresh_data()
 
 
@@ -71,19 +76,21 @@ class SettingsPodrazd(UnDialog):
 
     def add_item(self):
         dialog = AddPodrazd()
-        if dialog.exec():
-            self.updated.emit()
-        self.refresh_data()
+        dialog.updated.connect(self.refresh_data)
+        dialog.add_dialog()
+        self.updated.emit()
 
     def edit_item(self, item_id):
-        dialog = AddPodrazd(data=item_id)
-        if dialog.exec():
-            self.refresh_data()
+        dialog = AddPodrazd()
+        dialog.updated.connect(self.refresh_data)
+        dialog.edit_dialog(item_id)
+        self.updated.emit()
 
     def delete_item(self, item_id):
         item = PodrazdBase.get_by_id(item_id)
         self.table.table_model.delete_item(item)
         self.refresh_data()
+        self.updated.emit()
 
 
 class SettingsGroup(UnDialog):
@@ -97,18 +104,16 @@ class SettingsGroup(UnDialog):
 
     def add_item(self):
         dialog = AddGroup()
-        if dialog.exec():
-            self.updated.emit()
-            self.refresh_data()
+        dialog.updated.connect(self.refresh_data)
+        dialog.add_dialog()
 
     def edit_item(self, item_id):
-        dialog = AddGroup(data=item_id)
-        if dialog.exec():
-            self.refresh_data()
+        dialog = AddGroup()
+        dialog.updated.connect(self.refresh_data)
+        dialog.edit_dialog(item_id)
 
     def delete_item(self, item_id):
-        item = GroupBase.get_by_id(item_id)
-        self.table.table_model.delete_item(item)
+        self.table.table_model.delete_item(item_id)
         self.refresh_data()
 
 
@@ -189,34 +194,52 @@ class SettingsPlanes(UnDialog):
     def edit_item(self, item_id):
         dialog = AddPlane(data=item_id)
         if dialog.exec():
+            self.updated.emit()
             self.refresh_data()
 
     def delete_item(self, item_id):
-        item = PlaneBase.get_by_id(item_id)
-        self.table.table_model.delete_item(item)
+        self.table.table_model.delete_item(item_id)
+        self.refresh_data()
+
+
+class SettingsOsob(UnDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle('Особенности самолетов')
+        self.table = OsobTable()
+        self.table.edit_signal.connect(self.edit_item)
+        self.table.delete_signal.connect(self.delete_item)
+        self.main_layout.insertWidget(0, self.table)
+
+    def add_item(self):
+        dialog = AddOsob()
+        if dialog.exec():
+            self.refresh_data()
+
+    def edit_item(self, item_id):
+        dialog = AddOsob(data=item_id)
+        if dialog.exec():
+            self.refresh_data()
+
+    def delete_item(self, item_id):
+        self.table.table_model.delete_item(item_id)
         self.refresh_data()
 
 
 class UnAddEditDialog(QDialog):
     updated = pyqtSignal()
 
-    def __init__(self, data=None, parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
         self.item = None
-        self._data = data
         self.setModal(True)
         self.setFixedWidth(400)
         self.main_layout = QVBoxLayout()
         self.form_layout = QFormLayout()
-
         self.button_layout = QHBoxLayout()
+        self.btn_ok = QPushButton('Добавить')
 
-        if self._data:
-            self.btn_ok = QPushButton('Сохранить')
-        else:
-            self.btn_ok = QPushButton('Добавить')
-
-        self.btn_ok.clicked.connect(self.add_item)
+        self.btn_ok.clicked.connect(self.add_or_save_item)
         self.btn_cancel = QPushButton('Отменить')
         self.btn_cancel.clicked.connect(self.reject)
         self.button_layout.addWidget(self.btn_ok)
@@ -226,58 +249,79 @@ class UnAddEditDialog(QDialog):
         self.main_layout.addLayout(self.button_layout)
         self.setLayout(self.main_layout)
 
-    def add_item(self):
+    def add_or_save_item(self):
         pass
 
-    def config_ui(self):
+    def add_dialog(self):
+        pass
+
+    def edit_dialog(self, item_id):
         pass
 
 
 class AddPlaneType(UnAddEditDialog):
-    def __init__(self, data=None, parent=None):
-        super().__init__(data, parent)
-        if self._data:
-            self.item = TypeBase.get_by_id(data)
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.plane_type = QLineEdit()
         self.config_ui()
 
-    def config_ui(self):
-        self.setWindowTitle('Тип самолета')
-        self.form_layout.addRow('Тип самолета:', self.plane_type)
-        if self._data:
-            self.plane_type.setText(self.item.name)
+    def add_dialog(self):
+        if self.exec():
+            self.updated.emit()
 
-    def add_item(self):
-        if self._data:
+    def edit_dialog(self, item_id):
+        self.item = TypeBase.get_by_id(item_id)
+        self.plane_type.setText(self.item.name)
+        self.btn_ok.setText('Сохранить')
+        if self.exec():
+            self.updated.emit()
+
+    def config_ui(self):
+        self.setWindowTitle('Добавить тип самолета')
+        self.form_layout.addRow('Тип самолета:', self.plane_type)
+
+    def add_or_save_item(self):
+        if self.item:
             self.item.name = self.plane_type.text()
             self.item.save()
+            self.updated.emit()
             self.accept()
         else:
             TypeBase.create(name=self.plane_type.text())
+            self.updated.emit()
             self.accept()
 
 
 class AddPodrazd(UnAddEditDialog):
-    def __init__(self, data=None, parent=None):
-        super().__init__(data, parent)
-        if self._data:
-            self.item = PodrazdBase.get_by_id(data)
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.podrazd = QLineEdit()
         self.config_ui()
 
     def config_ui(self):
         self.setWindowTitle('Подразделение')
         self.form_layout.addRow('Название подразделения:', self.podrazd)
-        if self._data:
-            self.podrazd.setText(self.item.name)
 
-    def add_item(self):
-        if self._data:
+    def add_dialog(self):
+        if self.exec():
+            self.updated.emit()
+
+    def edit_dialog(self, item_id):
+        self.item = PodrazdBase.get_by_id(item_id)
+        self.podrazd.setText(self.item.name)
+        self.btn_ok.setText('Сохранить')
+        if self.exec():
+            self.updated.emit()
+
+    def add_or_save_item(self):
+        if self.item:
             self.item.name = self.podrazd.text()
             self.item.save()
+            self.updated.emit()
             self.accept()
         else:
             PodrazdBase.create(name=self.podrazd.text())
+            self.updated.emit()
             self.accept()
 
 
@@ -298,7 +342,7 @@ class AddGroup(UnAddEditDialog):
             self.group.setText(self.item.name)
             self.type_combo.setCurrentText(self.item.plane_type.name)
 
-    def add_item(self):
+    def add_or_save_item(self):
         if self._data:
             self.item.name = self.group.text()
             self.item.plane_type = self.type_combo.currentData()
@@ -347,7 +391,7 @@ class AddAgregate(UnAddEditDialog):
             self.system_combo.setCurrentText(self.item.system.name)
             self.agregate_name.setText(self.item.name)
 
-    def add_item(self):
+    def add_or_save_item(self):
         if self._data:
             self.item.system = self.system_combo.currentData()
             self.item.name = self.agregate_name.text()
@@ -383,7 +427,42 @@ class AddPlane(UnAddEditDialog):
         self.bort_number.setText(self.item.bort_number)
         self.zav_num.setText(self.item.zav_num)
 
-    def add_item(self):
+    def add_or_save_item(self):
+        if self.item:
+            self.item.plane_type = self.type_combo.currentData()
+            self.item.podrazd = self.podrazd.currentData()
+            self.item.bort_number = self.bort_number.text()
+            self.item.zav_num = self.zav_num.text()
+            self.item.save()
+            self.accept()
+        else:
+            PlaneBase.create(plane_type=self.type_combo.currentData(),
+                             podrazd=self.podrazd.currentData(),
+                             bort_number=self.bort_number.text(),
+                             zav_num=self.zav_num.text())
+            self.accept()
+
+
+class AddOsob(UnAddEditDialog):
+    def __init__(self, data=None, parent=None):
+        super().__init__(data, parent)
+        self.type_combo = PlaneTypeComboBox()
+        self.osob = QLineEdit()
+        self.config_ui()
+
+    def config_ui(self):
+        self.setWindowTitle("Добавить особенность")
+        self.form_layout.addRow("Тип самолета", self.type_combo)
+        self.form_layout.addRow('Особенность:', self.osob)
+
+    @pyqtSlot(int)
+    def edit_item(self, item_id):
+        self.setWindowTitle('Редактировать особенность')
+        self.item = OsobModel.get_by_id(item_id)
+        self.type_combo.setCurrentText(self.item.plane_type.name)
+        self.osob.setText(self.item.name)
+
+    def add_or_save_item(self):
         if self.item:
             self.item.plane_type = self.type_combo.currentData()
             self.item.podrazd = self.podrazd.currentData()

@@ -92,33 +92,33 @@ class PlaneBase(BaseModel):
     bort_number = CharField(unique=False)
 
 
-class OsobTypeBase(BaseModel):
+class OsobBase(BaseModel):
     plane_type = ForeignKeyField(TypeBase, backref='osobs')
     name = CharField(unique=True)
 
 
 class OsobPlaneBase(BaseModel):
-    osob = ForeignKeyField(OsobTypeBase, backref='osobs')
+    osob = ForeignKeyField(OsobBase, backref='osobs')
     plane = ForeignKeyField(PlaneBase)
 
 
 class OsobSystemAddBase(BaseModel):
-    osob = ForeignKeyField(OsobTypeBase, backref='systems_to_add')
+    osob = ForeignKeyField(OsobBase, backref='systems_to_add')
     system = ForeignKeyField(SystemBase)
 
 
 class OsobSystemRemoveBase(BaseModel):
-    osob = ForeignKeyField(OsobTypeBase, backref='systems_to_remove')
+    osob = ForeignKeyField(OsobBase, backref='systems_to_remove')
     system = ForeignKeyField(SystemBase)
 
 
 class OsobAgregateAddBase(BaseModel):
-    osob = ForeignKeyField(OsobTypeBase, backref='agregates_to_add')
+    osob = ForeignKeyField(OsobBase, backref='agregates_to_add')
     agregate = ForeignKeyField(AgregateBase)
 
 
 class OsobAgregateRemoveBase(BaseModel):
-    osob = ForeignKeyField(OsobTypeBase, backref='agregates_to_remove')
+    osob = ForeignKeyField(OsobBase, backref='agregates_to_remove')
     agregate = ForeignKeyField(AgregateBase)
 
 
