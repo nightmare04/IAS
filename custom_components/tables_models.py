@@ -216,6 +216,7 @@ class SystemModel(UnTableModel):
     def load_data(self, filter_str=None):
         pass
 
+
 class AgregateModel(UnTableModel):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -262,8 +263,7 @@ class PlanesModel(UnTableModel):
             query = PlaneBase.select()
 
         for data in query:
-            self._data.append([data.plane_type.name, data.podrazd.name, data.bort_number])
-            self._items_ids.append(data.id)
+            self._data.append([data, data.plane_type.name, data.podrazd.name, data.bort_number])
         self.endResetModel()
 
 

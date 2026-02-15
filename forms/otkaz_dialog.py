@@ -1,9 +1,9 @@
 
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QFormLayout, QLineEdit, QComboBox, QDialogButtonBox, QMessageBox, \
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QFormLayout, QLineEdit, QDialogButtonBox, QMessageBox, \
     QCheckBox
 
-from custom_components.combo_box import GroupComboBox, SystemComboBox, AgregateComboBox, ComboBoxModel
-from data.data import PlaneBase, GroupBase, SystemBase, AgregateBase, OtkazAgregateBase, get_systems_for_plane
+from custom_components.combo_box import GroupComboBox, SystemComboBox, AgregateComboBox
+from data.data import PlaneBase, OtkazAgregateBase
 
 
 class AddOtkazDialog(QDialog):

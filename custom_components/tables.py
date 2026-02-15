@@ -1,4 +1,4 @@
-from PyQt6.QtCore import Qt, pyqtSignal, QObject
+from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QAction
 from PyQt6.QtWidgets import QTableView, QAbstractItemView, QSizePolicy, QHeaderView, QMessageBox, QMenu
 
@@ -127,6 +127,7 @@ class GroupTable(UnTableView):
 
     def set_filter(self, filter_str):
         self.table_model.load_data(filter_str)
+
 
 class AgregateTable(UnTableView):
     def __init__(self, parent=None):

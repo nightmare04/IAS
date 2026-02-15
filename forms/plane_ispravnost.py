@@ -47,7 +47,7 @@ class IspravnostFrame(QFrame):
 
 
 class PlaneIspravnost(QDialog):
-    def __init__(self, plane : PlaneBase, parent=None, ):
+    def __init__(self, plane: PlaneBase, parent=None, ):
         super().__init__(parent)
         self.plane = plane
         self.setWindowTitle(f"Исправность самолета {self.plane.plane_type.name} №{self.plane.bort_number}")
@@ -128,7 +128,6 @@ class PlaneIspravnost(QDialog):
         # Подключаем двойной клик
         self.table_view.doubleClicked.connect(self.on_double_click)
 
-
     def load_data(self, category_filter=None):
         try:
             query = (OtkazAgregateBase
@@ -146,7 +145,3 @@ class PlaneIspravnost(QDialog):
             self.update_status(query)
         except Exception as e:
             QMessageBox.warning(self, "Ошибка", f"Ошибка при загрузке данных: {str(e)}")
-
-
-
-

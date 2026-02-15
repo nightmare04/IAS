@@ -54,7 +54,6 @@ class MainForm(QMainWindow):
         dialog = SettingsPlaneType(self)
         dialog.exec()
 
-
     def podr_dialog(self):
         dialog = SettingsPodrazd(self)
         dialog.updated.connect(self.frame.update_podr)
