@@ -1,4 +1,4 @@
-from PyQt6.QtCore import pyqtSignal, pyqtSlot
+from PyQt6.QtCore import pyqtSignal, pyqtSlot, Qt
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QPushButton, QHBoxLayout, QFormLayout, QLineEdit
 
 from custom_components.combo_box import PlaneTypeComboBox, SystemComboBox, GroupComboBox, PodrazdComboBox
@@ -54,13 +54,12 @@ class SettingsPlaneType(UnDialog):
         dialog.updated.connect(self.refresh_data)
         dialog.add_dialog()
 
-    def edit_item(self, item_id):
+    def edit_item(self, item):
         dialog = AddPlaneType()
         dialog.updated.connect(self.refresh_data)
-        dialog.edit_dialog(item_id)
+        dialog.edit_dialog(item)
 
-    def delete_item(self, item_id):
-        item = TypeBase.get_by_id(item_id)
+    def delete_item(self, item):
         self.table.table_model.delete_item(item)
         self.refresh_data()
 
@@ -97,10 +96,13 @@ class SettingsGroup(UnDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Группы обслуживания")
+        self.type_combo = PlaneTypeComboBox()
         self.table = GroupTable(self)
+        self.type_combo.currentTextChanged.connect(self.table.set_filter)
         self.table.edit_signal.connect(self.edit_item)
         self.table.delete_signal.connect(self.delete_item)
-        self.main_layout.insertWidget(0, self.table)
+        self.main_layout.insertWidget(0, self.type_combo)
+        self.main_layout.insertWidget(1, self.table)
 
     def add_item(self):
         dialog = AddGroup()
@@ -118,6 +120,9 @@ class SettingsGroup(UnDialog):
 
 
 class SettingsAgregate(UnDialog):
+    edit_signal = pyqtSignal()
+    add_signal = pyqtSignal(object, object, object)
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Блоки/Агрегаты")
@@ -129,7 +134,15 @@ class SettingsAgregate(UnDialog):
         self.system_combo = SystemComboBox()
 
         self.plane_type_combo.currentTextChanged.connect(self.group_combo.set_filter)
+        self.plane_type_combo.currentTextChanged.connect(
+            lambda x: self.table.table_model.load_data(filter_type=self.plane_type_combo.currentData())
+        )
+
         self.group_combo.currentTextChanged.connect(self.system_combo.set_filter)
+        self.group_combo.currentTextChanged.connect(
+            lambda x: self.table.table_model.load_data(filter_group=self.group_combo.currentData())
+        )
+
         self.system_combo.currentTextChanged.connect(
             lambda x: self.table.table_model.load_data(filter_system=self.system_combo.currentData())
         )
@@ -139,9 +152,10 @@ class SettingsAgregate(UnDialog):
         self.main_layout.insertWidget(3, self.table)
 
     def edit_item(self, item_id):
-        dialog = AddAgregate(data=item_id)
-        if dialog.exec():
-            self.update_data(dialog)
+        dialog = AddAgregate()
+        self.edit_signal.emit(item_id)
+        dialog.updated.connect(self.refresh_data)
+        dialog.edit_dialog(item_id)
 
     def delete_item(self, item_id):
         item = AgregateBase.get_by_id(item_id)
@@ -155,25 +169,11 @@ class SettingsAgregate(UnDialog):
         self._model.load_data(filter_system=self.system_combo.currentData())
 
     def add_item(self):
-        if self.system_combo.currentData():
-            system = self.system_combo.currentData()
-            dialog = AddAgregate(system=system)
-        elif self.group_combo.currentData():
-            group = self.group_combo.currentData()
-            dialog = AddAgregate(group=group)
-        elif self.plane_type_combo.currentData():
-            plane_type = self.plane_type_combo.currentData()
-            dialog = AddAgregate(plane_type=plane_type)
-        else:
-            dialog = AddAgregate()
-
-        if dialog.exec():
-            self.update_data(dialog)
-
-        # self._model.load_data()
-
-    def refresh_data(self):
-        self.table.table_model.load_data()
+        dialog = AddAgregate()
+        self.add_signal.connect(dialog.add_dialog)
+        self.add_signal.emit(self.plane_type_combo.currentData(Qt.ItemDataRole.UserRole),
+                             self.group_combo.currentData(Qt.ItemDataRole.UserRole),
+                             self.system_combo.currentData(Qt.ItemDataRole.UserRole))
 
 
 class SettingsPlanes(UnDialog):
@@ -192,7 +192,7 @@ class SettingsPlanes(UnDialog):
             self.refresh_data()
 
     def edit_item(self, item_id):
-        dialog = AddPlane(data=item_id)
+        dialog = AddPlane()
         if dialog.exec():
             self.updated.emit()
             self.refresh_data()
@@ -252,7 +252,7 @@ class UnAddEditDialog(QDialog):
     def add_or_save_item(self):
         pass
 
-    def add_dialog(self):
+    def add_dialog(self, *args):
         pass
 
     def edit_dialog(self, item_id):
@@ -269,8 +269,8 @@ class AddPlaneType(UnAddEditDialog):
         if self.exec():
             self.updated.emit()
 
-    def edit_dialog(self, item_id):
-        self.item = TypeBase.get_by_id(item_id)
+    def edit_dialog(self, item):
+        self.item = item
         self.plane_type.setText(self.item.name)
         self.btn_ok.setText('Сохранить')
         if self.exec():
@@ -306,8 +306,8 @@ class AddPodrazd(UnAddEditDialog):
         if self.exec():
             self.updated.emit()
 
-    def edit_dialog(self, item_id):
-        self.item = PodrazdBase.get_by_id(item_id)
+    def edit_dialog(self, item):
+        self.item = item
         self.podrazd.setText(self.item.name)
         self.btn_ok.setText('Сохранить')
         if self.exec():
@@ -326,13 +326,21 @@ class AddPodrazd(UnAddEditDialog):
 
 
 class AddGroup(UnAddEditDialog):
-    def __init__(self, data=None, parent=None):
-        super().__init__(data, parent)
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.type_combo = PlaneTypeComboBox()
         self.group = QLineEdit()
         if self._data:
             self.item = GroupBase.get_by_id(data)
         self.config_ui()
+
+    def edit_dialog(self, item):
+        self.item = item
+        self.type_combo.setCurrentText(self.item.plane_type.name)
+        self.group.setText(self.item.name)
+        self.btn_ok.setText('Сохранить')
+        if self.exec():
+            self.updated.emit()
 
     def config_ui(self):
         self.setWindowTitle("Группы обслуживания")
@@ -354,29 +362,68 @@ class AddGroup(UnAddEditDialog):
 
 
 class AddAgregate(UnAddEditDialog):
-    def __init__(self, data=None, plane_type=None, group=None, system=None, parent=None):
-        super().__init__(data, parent)
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.type_combo = PlaneTypeComboBox()
         self.group_combo = GroupComboBox()
         self.system_combo = SystemComboBox()
         self.agregate_name = QLineEdit()
 
+        self.group_combo.setDisabled(True)
+        self.system_combo.setDisabled(True)
+        self.agregate_name.setDisabled(True)
+        self.btn_ok.setDisabled(True)
+
         self.type_combo.currentTextChanged.connect(self.group_combo.set_filter)
+        self.type_combo.currentTextChanged.connect(self.check)
         self.group_combo.currentTextChanged.connect(self.system_combo.set_filter)
+        self.group_combo.currentTextChanged.connect(self.check)
+        self.system_combo.currentTextChanged.connect(self.check)
 
-        if system:
-            self.type_combo.setCurrentText(SystemBase.get_by_id(system).group.plane_type.name)
-            self.group_combo.setCurrentText(SystemBase.get_by_id(system).group.name)
-            self.system_combo.setCurrentText(SystemBase.get_by_id(system).name)
-        elif group:
-            self.type_combo.setCurrentText(GroupBase.get_by_id(group).plane_type.name)
-            self.group_combo.setCurrentText(GroupBase.get_by_id(group).name)
-        elif plane_type:
-            self.type_combo.setCurrentText(TypeBase.get_by_id(plane_type).name)
-
-        if data:
-            self.item = AgregateBase.get_by_id(data)
         self.config_ui()
+
+    def check(self):
+        plane_type = isinstance(self.type_combo.currentData(role=Qt.ItemDataRole.UserRole), TypeBase)
+        group = isinstance(self.group_combo.currentData(role=Qt.ItemDataRole.UserRole), GroupBase)
+        system = isinstance(self.system_combo.currentData(role=Qt.ItemDataRole.UserRole), SystemBase)
+        if plane_type:
+            self.group_combo.setEnabled(True)
+            if group:
+                self.system_combo.setEnabled(True)
+                if system:
+                    self.agregate_name.setEnabled(True)
+                    self.btn_ok.setEnabled(True)
+                else:
+                    self.agregate_name.setDisabled(True)
+                    self.btn_ok.setEnabled(False)
+            else:
+                self.system_combo.setEnabled(False)
+                self.agregate_name.setEnabled(False)
+                self.btn_ok.setEnabled(False)
+        else:
+            self.group_combo.setEnabled(False)
+            self.system_combo.setEnabled(False)
+            self.agregate_name.setEnabled(False)
+            self.btn_ok.setEnabled(False)
+
+    def add_dialog(self, plane_type: PlaneBase, group: GroupBase, system: SystemBase):
+        if isinstance(plane_type, PlaneBase):
+            self.type_combo.setCurrentText(plane_type.name)
+            if isinstance(group, GroupBase):
+                self.group_combo.setCurrentText(group.name)
+                if isinstance(system, SystemBase):
+                    self.system_combo.setCurrentText(system.name)
+        if self.exec():
+            self.updated.emit()
+
+    def edit_dialog(self, item):
+        self.item = item
+        self.type_combo.setCurrentText(self.item.system.group.plane_type.name)
+        self.group_combo.setCurrentText(self.item.system.group.name)
+        self.system_combo.setCurrentText(self.item.system.name)
+        self.agregate_name.setText(self.item.name)
+        if self.exec():
+            self.updated.emit()
 
     def config_ui(self):
         self.setWindowTitle("Агрегат/Блок")
@@ -385,7 +432,7 @@ class AddAgregate(UnAddEditDialog):
         self.form_layout.addRow("Система самолета:", self.system_combo)
         self.form_layout.addRow('Название блока/агрегата:', self.agregate_name)
 
-        if self._data:
+        if self.item:
             self.type_combo.setCurrentText(self.item.system.group.plane_type.name)
             self.group_combo.setCurrentText(self.item.system.group.name)
             self.system_combo.setCurrentText(self.item.system.name)
@@ -403,8 +450,8 @@ class AddAgregate(UnAddEditDialog):
 
 
 class AddPlane(UnAddEditDialog):
-    def __init__(self, data=None, parent=None):
-        super().__init__(data, parent)
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.type_combo = PlaneTypeComboBox()
         self.podrazd = PodrazdComboBox()
         self.bort_number = QLineEdit()

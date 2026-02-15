@@ -9,8 +9,8 @@ from forms.otkaz_dialog import EditOtkazDialog
 
 
 class UnTableView(QTableView):
-    edit_signal = pyqtSignal(int)
-    delete_signal = pyqtSignal(int)
+    edit_signal = pyqtSignal(object)
+    delete_signal = pyqtSignal(object)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -30,23 +30,21 @@ class UnTableView(QTableView):
         menu = QMenu(self)
 
         if index.isValid() and isinstance(model, UnTableModel):
-            row = index.row()
-            item_id = model.get_item_id(row)
+            item = model.data(index, role=Qt.ItemDataRole.UserRole)
             edit_action = QAction("✏️ Изменить элемент", self)
-            edit_action.triggered.connect(lambda: self.edit_item(item_id))
+            edit_action.triggered.connect(lambda: self.edit_item(item))
             menu.addAction(edit_action)
-
             delete_action = QAction("🗑️ Удалить элемент", self)
-            delete_action.triggered.connect(lambda: self.delete_item(item_id))
+            delete_action.triggered.connect(lambda: self.delete_item(item))
             menu.addAction(delete_action)
 
         menu.exec(self.viewport().mapToGlobal(position))
 
-    def edit_item(self, item_id):
-        self.edit_signal.emit(item_id)
+    def edit_item(self, item):
+        self.edit_signal.emit(item)
 
-    def delete_item(self, item_id):
-        self.delete_signal.emit(item_id)
+    def delete_item(self, item):
+        self.delete_signal.emit(item)
 
 
 class IspravnostTableView(UnTableView):
@@ -127,6 +125,8 @@ class GroupTable(UnTableView):
         self.table_model = GroupModel()
         self.setModel(self.table_model)
 
+    def set_filter(self, filter_str):
+        self.table_model.load_data(filter_str)
 
 class AgregateTable(UnTableView):
     def __init__(self, parent=None):

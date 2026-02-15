@@ -125,7 +125,6 @@ class UnTableModel(QAbstractTableModel):
         super().__init__(parent)
         self._data = []
         self._headers = []
-        self._items_ids = []
         self.load_data()
 
     def load_data(self):
@@ -146,8 +145,9 @@ class UnTableModel(QAbstractTableModel):
 
         if 0 <= row < self.rowCount() and 0 <= col < self.columnCount():
             if role == Qt.ItemDataRole.DisplayRole:
-                return self._data[row][col]
-
+                return self._data[row][col+1]
+            elif role == Qt.ItemDataRole.UserRole:
+                return self._data[row][0]
         return None
 
     def headerData(self, section, orientation, role=Qt.ItemDataRole.DisplayRole):
@@ -156,112 +156,94 @@ class UnTableModel(QAbstractTableModel):
                 return self._headers[section]
         return None
 
-    def get_item_id(self, row):
-        if 0 <= row < len(self._items_ids):
-            return self._items_ids[row]
-        return None
-
     def clear_data(self):
         self._data = []
-        self._items_ids = []
+
+    @staticmethod
+    def delete_item(item):
+        item.delete_instance()
 
 
 class PlanesTypesModel(UnTableModel):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self._headers = ["Наименование"]
 
     def load_data(self):
         self.beginResetModel()
         self.clear_data()
-        self._headers = ["Наименование"]
         query = TypeBase.select()
-        for data in query:
-            self._data.append([data.name])
-            self._items_ids.append(data.id)
+        for plane_type in list(query):
+            self._data.append([plane_type, plane_type.name])
         self.endResetModel()
-
-    @staticmethod
-    def delete_item(item_id):
-        item = TypeBase.get_by_id(item_id)
-        item.delete_instance()
 
 
 class PodrazdModel(UnTableModel):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self._headers = ["Наименование"]
 
     def load_data(self):
         self.beginResetModel()
         self.clear_data()
-        self._headers = ["Наименование"]
         query = PodrazdBase.select()
         for data in query:
-            self._data.append([data.name])
-            self._items_ids.append(data.id)
+            self._data.append([data, data.name])
         self.endResetModel()
-
-    @staticmethod
-    def delete_item(item_id):
-        item = PodrazdBase.get_by_id(item_id)
-        item.delete_instance()
 
 
 class GroupModel(UnTableModel):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self._headers = ["Группа", "Тип"]
 
-    def load_data(self):
+    def load_data(self, filter_str=None):
         self.beginResetModel()
         self.clear_data()
-        self._headers = ["Группа", "Тип"]
-        query = GroupBase.select()
+        query = GroupBase.select().join(TypeBase)
+        if filter_str is not None:
+            query = query.where(TypeBase.name == filter_str)
         for data in query:
-            self._data.append([data.name, data.plane_type.name])
-            self._items_ids.append(data.id)
+            self._data.append([data, data.name, data.plane_type.name])
         self.endResetModel()
 
-    @staticmethod
-    def delete_item(item_id):
-        item = GroupBase.get_by_id(item_id)
-        item.delete_instance()
 
+class SystemModel(UnTableModel):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._headers = ["Система", "Группа обслуживания", "Тип самолета"]
+
+    def load_data(self, filter_str=None):
+        pass
 
 class AgregateModel(UnTableModel):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self._headers = ["Блок/Агрегат", "Система", "Группа", "Тип самолета"]
 
     def load_data(self, filter_type=None, filter_group=None, filter_system=None):
         self.beginResetModel()
-        self.clear_data()
-        self._headers = ["Группа", "Система", "Блок/Агрегат"]
+        query = (AgregateBase
+                 .select()
+                 .join(SystemBase)
+                 .join(GroupBase)
+                 .join(TypeBase)
+                 )
 
         if filter_system:
-            query = (AgregateBase.select()
-                     .join(SystemBase)
-                     .join(GroupBase)
-                     .where(AgregateBase.system == filter_system))
+            query = query.where(AgregateBase.system == filter_system)
         elif filter_group:
-            query = (AgregateBase.select()
-                     .join(SystemBase)
-                     .join(GroupBase)
-                     .where(AgregateBase.system.group == filter_group))
+            query = query.where(AgregateBase.system.group == filter_group)
         elif filter_type:
-            query = (AgregateBase.select()
-                     .join(SystemBase)
-                     .join(GroupBase)
-                     .where(AgregateBase.system.group.plane_type == filter_type))
-        else:
-            query = AgregateBase.select()
-
-        for data in query:
-            self._data.append([data.system.group.name, data.system.name, data.name])
-            self._items_ids.append(data.id)
+            query = query.where(AgregateBase.system.plane_type == filter_type)
+        self.clear_data()
+        for agregate in query:
+            self._data.append([agregate,
+                               agregate.name,
+                               agregate.system.name,
+                               agregate.system.group.name,
+                               agregate.system.plane_type.name])
         self.endResetModel()
-
-    @staticmethod
-    def delete_item(item_id):
-        item = AgregateBase.get_by_id(item_id)
-        item.delete_instance()
 
 
 class PlanesModel(UnTableModel):
@@ -284,11 +266,6 @@ class PlanesModel(UnTableModel):
             self._items_ids.append(data.id)
         self.endResetModel()
 
-    @staticmethod
-    def delete_item(item_id):
-        item = PlaneBase.get_by_id(item_id)
-        item.delete_instance()
-
 
 class OsobModel(UnTableModel):
     def __init__(self, parent=None):
@@ -309,8 +286,3 @@ class OsobModel(UnTableModel):
             self._data.append([data.plane_type, data.name])
             self._items_ids.append(data.id)
         self.endResetModel()
-
-    @staticmethod
-    def delete_item(item_id):
-        item = OsobBase.get_by_id(item_id)
-        item.delete_instance()
