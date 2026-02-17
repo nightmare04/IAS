@@ -30,7 +30,7 @@ class UnTableView(QTableView):
 
         menu = QMenu(self)
 
-        if index.isValid() and isinstance(model, UnTableModel):
+        if index.isValid():
             item = model.data(index, role=Qt.ItemDataRole.UserRole)
             edit_action = QAction("✏️ Изменить элемент", self)
             edit_action.triggered.connect(lambda: self.edit_item(item))
@@ -48,33 +48,11 @@ class UnTableView(QTableView):
         self.delete_signal.emit(item)
 
 
-class IspravnostTableView(UnTableView):
+class IspravnostTable(UnTableView):
     def __init__(self, plane: PlaneBase, parent=None):
         super().__init__(parent)
         self.table_model = IspravnostTableModel(plane)
         self.setModel(self.table_model)
-
-    def show_context_menu(self, position):
-        index = self.indexAt(position)
-        model = self.model()
-
-        menu = QMenu(self)
-
-        if index.isValid() and isinstance(model, IspravnostTableModel):
-            row = index.row()
-            row_type = model.get_row_type(row)
-            item = model.get_item(row)
-
-            if row_type == 'agregate' and item:
-                edit_action = QAction("✏️ Изменить", self)
-                edit_action.triggered.connect(lambda: self.edit_item(item))
-                menu.addAction(edit_action)
-
-                delete_action = QAction("🗑️ Удалить", self)
-                delete_action.triggered.connect(lambda: self.delete_item(item))
-                menu.addAction(delete_action)
-
-        menu.exec(self.viewport().mapToGlobal(position)) # type: ignore
 
     def set_span_for_groups(self):
         self.clear_all_span()

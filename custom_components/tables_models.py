@@ -110,8 +110,7 @@ class IspravnostTableModel(QAbstractTableModel):
         return row in self._group_rows
 
     @staticmethod
-    def delete_item(item_id):
-        item = OtkazAgregateBase.get_by_id(item_id)
+    def delete_item(item):
         item.delete_instance()
 
 
