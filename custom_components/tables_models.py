@@ -243,19 +243,25 @@ class AgregateModel(UnTableModel):
 
 class PlanesModel(UnTableModel):
     def __init__(self, parent=None):
+        self.filter = {}
         super().__init__(parent)
 
-    def load_data(self, filter_type=None, filter_group=None, filter_system=None):
+    def set_filter(self, filter: dict):
+        self.filter = filter
+        self.load_data()
+
+    def load_data(self):
         self.beginResetModel()
         self.clear_data()
+        query = PlaneBase.select()
         self._headers = ["Тип самолета", "Подразделение", "Бортовой номер"]
 
-        if filter_type:
-            query = (PlaneBase.select()
-                     .where(PlaneBase.plane_type == filter_type))
-        else:
-            query = PlaneBase.select()
-
+        if isinstance(self.filter.get('plane_type'), TypeBase):
+            query = query.where(PlaneBase.plane_type == self.filter['plane_type'])
+        
+        if isinstance(self.filter.get('podrazd'), PodrazdBase):
+            query = query.where(PlaneBase.podrazd == self.filter['podrazd'])
+            
         for data in query:
             self._data.append([data, data.plane_type.name, data.podrazd.name, data.bort_number])
         self.endResetModel()

@@ -1,10 +1,11 @@
-from PyQt6.QtCore import QAbstractListModel, Qt
+from PyQt6.QtCore import QAbstractListModel, Qt, pyqtSignal
 from PyQt6.QtWidgets import QComboBox
 
 from data.data import TypeBase, GroupBase, SystemBase, AgregateBase, PodrazdBase
 
 
 class ComboBoxModel(QAbstractListModel):
+    
     def __init__(self, peewee_model=None, first_string=None, display_field='name', parent=None):
         super().__init__(parent)
         self._peewee_model = peewee_model
@@ -48,21 +49,33 @@ class ComboBoxModel(QAbstractListModel):
         self.endResetModel()
 
 
-class PlaneTypeComboBox(QComboBox):
+class IASComboBox(QComboBox):
+    changed = pyqtSignal(object)
+    
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.currentIndexChanged.connect(self.emit_changed)
+        
+    def emit_changed(self, index):
+        item = self.itemData(index, role=Qt.ItemDataRole.UserRole)
+        self.changed.emit(item)
+        
+
+class PlaneTypeComboBox(IASComboBox):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._model = ComboBoxModel(peewee_model=TypeBase, first_string='Выберите тип самолета')
         self.setModel(self._model)
 
 
-class PodrazdComboBox(QComboBox):
+class PodrazdComboBox(IASComboBox):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._model = ComboBoxModel(peewee_model=PodrazdBase, first_string='Выберите подразделение')
         self.setModel(self._model)
 
 
-class GroupComboBox(QComboBox):
+class GroupComboBox(IASComboBox):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._model = ComboBoxModel(peewee_model=GroupBase, first_string='Выберите группу обслуживания')
@@ -78,7 +91,7 @@ class GroupComboBox(QComboBox):
         self._model.refresh()
 
 
-class SystemComboBox(QComboBox):
+class SystemComboBox(IASComboBox):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._model = ComboBoxModel(peewee_model=SystemBase, first_string='Выберите систему самолета')
@@ -94,7 +107,7 @@ class SystemComboBox(QComboBox):
         self._model.refresh()
 
 
-class AgregateComboBox(QComboBox):
+class AgregateComboBox(IASComboBox):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._model = ComboBoxModel(peewee_model=AgregateBase, first_string='Выберите блок/агрегат самолета')

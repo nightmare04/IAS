@@ -301,12 +301,24 @@ class SettingsAgregate(UnDialog):
 
 
 class SettingsPlanes(UnDialog):
+    
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Самолеты")
         self.setup_ui(PlanesTable)
         self.plane_type = PlaneTypeComboBox()
-        self.plane_type.currentTextChanged.connect(self.table.tab)
+        self.plane_type.changed.connect(self.set_filter)
+        self.podrazd = PodrazdComboBox()
+        self.podrazd.changed.connect(self.set_filter)
+        self.layout().insertWidget(0, self.plane_type)
+        self.layout().insertWidget(1, self.podrazd)
+
+    def set_filter(self):
+        filter_dict = {
+            'plane_type': self.plane_type.currentData(),
+            'podrazd': self.podrazd.currentData()
+        }
+        self.table.table_model.set_filter(filter_dict)
 
     def add_item(self):
         self.handle_dialog(AddPlane, 'add')

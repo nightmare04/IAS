@@ -6,7 +6,6 @@ from custom_components.combo_box import AgregateComboBox, GroupComboBox, SystemC
 from custom_components.groups import PodrGroup
 from custom_components.tables import IspravnostTableModel, IspravnostTable
 from data.data import PlaneBase, GroupBase, OtkazAgregateBase, PodrazdBase
-from .settings import UnDialog
 
 
 class IspravnostFrame(QFrame):
@@ -27,8 +26,8 @@ class IspravnostFrame(QFrame):
 
     def open_dialog(self, btn:PlaneBtn):
         dialog = PlaneIspravnost(btn.plane)
-        if dialog.exec():
-            btn.update_color()
+        dialog.exec()
+        btn.update_color()
 
     def clear_layout(self, layout):
         while layout.count():
