@@ -1,11 +1,11 @@
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QAction
-from PyQt6.QtWidgets import QTableView, QAbstractItemView, QSizePolicy, QHeaderView, QMessageBox, QMenu
+from PyQt6.QtWidgets import QTableView, QAbstractItemView, QSizePolicy, QMenu, QHeaderView
 
 from custom_components.tables_models import IspravnostTableModel, UnTableModel, PlanesTypesModel, PodrazdModel, \
     GroupModel, AgregateModel, PlanesModel, OsobModel
-from data.data import OtkazAgregateBase
-from forms.otkaz_dialog import EditOtkazDialog
+from data.data import PlaneBase
+
 
 
 class UnTableView(QTableView):
@@ -14,14 +14,15 @@ class UnTableView(QTableView):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.parent = parent
         self.table_model = UnTableModel()
         self.setAlternatingRowColors(False)
         self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding))
-        self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self.show_context_menu)
+        header = self.horizontalHeader()
+        header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents) # type: ignore
+        header.setStretchLastSection(True) # type: ignore
 
     def show_context_menu(self, position):
         index = self.indexAt(position)
@@ -38,7 +39,7 @@ class UnTableView(QTableView):
             delete_action.triggered.connect(lambda: self.delete_item(item))
             menu.addAction(delete_action)
 
-        menu.exec(self.viewport().mapToGlobal(position))
+        menu.exec(self.viewport().mapToGlobal(position)) # type: ignore
 
     def edit_item(self, item):
         self.edit_signal.emit(item)
@@ -48,8 +49,10 @@ class UnTableView(QTableView):
 
 
 class IspravnostTableView(UnTableView):
-    def __init__(self, parent=None):
+    def __init__(self, plane: PlaneBase, parent=None):
         super().__init__(parent)
+        self.table_model = IspravnostTableModel(plane)
+        self.setModel(self.table_model)
 
     def show_context_menu(self, position):
         index = self.indexAt(position)
@@ -60,49 +63,44 @@ class IspravnostTableView(UnTableView):
         if index.isValid() and isinstance(model, IspravnostTableModel):
             row = index.row()
             row_type = model.get_row_type(row)
-            item_id = model.get_item_id(row)
+            item = model.get_item(row)
 
-            if row_type == 'agregate' and item_id:
+            if row_type == 'agregate' and item:
                 edit_action = QAction("✏️ Изменить", self)
-                edit_action.triggered.connect(lambda: self.edit_item(item_id))
+                edit_action.triggered.connect(lambda: self.edit_item(item))
                 menu.addAction(edit_action)
 
                 delete_action = QAction("🗑️ Удалить", self)
-                delete_action.triggered.connect(lambda: self.delete_item(item_id))
+                delete_action.triggered.connect(lambda: self.delete_item(item))
                 menu.addAction(delete_action)
 
-        menu.exec(self.viewport().mapToGlobal(position))
+        menu.exec(self.viewport().mapToGlobal(position)) # type: ignore
 
     def set_span_for_groups(self):
         self.clear_all_span()
-        model = self.model()
-        if isinstance(model, IspravnostTableModel):
-            for row in range(model.rowCount()):
-                if model.is_group_row(row):
-                    self.setSpan(row, 0, 1, model.columnCount())
+        if isinstance(self.table_model, IspravnostTableModel):
+            for row in range(self.table_model.rowCount()):
+                if self.table_model.is_group_row(row):
+                    self.setSpan(row, 0, 1, self.table_model.columnCount())
 
     def clear_all_span(self):
-        model = self.model()
-        if isinstance(model, IspravnostTableModel):
-            rows = model.rowCount()
-            cols = model.columnCount()
+        if isinstance(self.table_model, IspravnostTableModel):
+            rows = self.table_model.rowCount()
+            cols = self.table_model.columnCount()
             for row in range(rows):
                 for col in range(cols):
                     if self.rowSpan(row, col) > 1:
                         self.setSpan(row, col, 1, 1)
 
-    def edit_item(self, item_id):
-        try:
-            item = OtkazAgregateBase.get_by_id(item_id)
-            dialog = EditOtkazDialog(item)
-            dialog.exec()
+    def set_filter(self, filter):
+        pass
 
-        except OtkazAgregateBase.DoesNotExist:
-            QMessageBox.warning(self, "Ошибка", "Блок/агрегат не найден!")
+    def load_data(self):
+        self.table_model.load_data()
+        self.clear_all_span()
+        self.set_span_for_groups()
 
-    def delete_item(self, item_id):
-        self.model().delete_item(item_id)
-        self.parent.refresh_data()
+
 
 
 class PlaneTypesTable(UnTableView):

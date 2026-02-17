@@ -5,55 +5,46 @@ from data.data import TypeBase, PodrazdBase, GroupBase, OtkazAgregateBase, Agreg
 
 
 class IspravnostTableModel(QAbstractTableModel):
-    def __init__(self, data, parent=None):
+    def __init__(self, plane, parent=None):
         super().__init__(parent)
-        self._data = data
+        self.plane = plane
+        self._data = None
         self._headers = ["Наименование", "Система", "Номер агрегата/блока", "Снят", "Примечание"]
         self._prepared_data = []
         self._group_rows = []
         self._group_values = []
-        self._items_ids = []
         self._row_type = []
+        self.load_data()
 
-    def load_data(self, data):
-        """Загружает данные из запроса Peewee"""
+    def load_data(self):
         self.beginResetModel()
         self._prepared_data = []
         self._group_rows = []
         self._group_values = []
-        self._items_ids = []
         self._row_type = []
-
-        # Сортируем по категории
-        sorted_data = sorted(data, key=lambda x: str(x.agregate.system.name))
+        self._data = (OtkazAgregateBase.select()
+                                        .where(OtkazAgregateBase.plane == self.plane))
+        sorted_data = sorted(self._data, key=lambda x: str(x.agregate.system.name))
         current_group = None
         row_idx = 0
 
         for item in sorted_data:
             group_value = str(item.agregate.system.group.name)
-
-            # Если началась новая группа
             if group_value != current_group:
-                # Добавляем строку группы
                 self._prepared_data.append([group_value] * (len(self._headers)))
                 self._group_rows.append(row_idx)
-                self._items_ids.append(None)
                 self._row_type.append('group')
                 row_idx += 1
                 current_group = group_value
 
-            # Добавляем обычную строку данных
             if item.removed:
                 removed = 'Снят'
             else:
                 removed = 'На самолете'
-
-            row_data = [item.agregate.name, item.agregate.system.name, item.number, removed, item.description]
+            row_data = [item, item.agregate.name, item.agregate.system.name, item.number, removed, item.description]
             self._prepared_data.append(row_data)
-            self._items_ids.append(item.id)
             self._row_type.append('agregate')
             row_idx += 1
-
         self.endResetModel()
 
     def rowCount(self, parent=QModelIndex()):
@@ -71,7 +62,7 @@ class IspravnostTableModel(QAbstractTableModel):
 
         if 0 <= row < len(self._prepared_data) and 0 <= col < len(self._headers):
             if role == Qt.ItemDataRole.DisplayRole:
-                value = self._prepared_data[row][col]
+                value = self._prepared_data[row][col+1]
                 return str(value) if value is not None else ""
 
             elif role == Qt.ItemDataRole.FontRole and row in self._group_rows:
@@ -79,6 +70,11 @@ class IspravnostTableModel(QAbstractTableModel):
                 font.setBold(True)
                 font.setPointSize(10)
                 return font
+            
+            elif role == Qt.ItemDataRole.UserRole:
+                if self._row_type[row] == 'agregate':
+                    return self._prepared_data[row][0]
+                return None
 
             elif role == Qt.ItemDataRole.BackgroundRole:
                 if self._row_type[row] == 'group':
@@ -95,10 +91,9 @@ class IspravnostTableModel(QAbstractTableModel):
 
         return None
 
-    def get_item_id(self, row):
-        if 0 <= row < len(self._items_ids):
-            return self._items_ids[row]
-        return None
+    def get_item(self, index):
+        item = self.data(index, role=Qt.ItemDataRole.UserRole)
+        return item
 
     def get_row_type(self, row):
         if 0 <= row < len(self._row_type):
@@ -284,5 +279,4 @@ class OsobModel(UnTableModel):
 
         for data in query:
             self._data.append([data.plane_type, data.name])
-            self._items_ids.append(data.id)
         self.endResetModel()

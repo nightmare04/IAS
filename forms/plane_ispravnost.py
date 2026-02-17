@@ -1,12 +1,11 @@
-from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QWidget, QHBoxLayout, QComboBox, QPushButton, QLabel, QMessageBox, \
-    QFrame, QGridLayout
+    QFrame, QGridLayout, QFormLayout, QLineEdit, QDialogButtonBox, QCheckBox
 
 from custom_components.buttons import PlaneBtn
+from custom_components.combo_box import AgregateComboBox, GroupComboBox, SystemComboBox
 from custom_components.groups import PodrGroup
 from custom_components.tables import IspravnostTableModel, IspravnostTableView
-from data.data import PlaneBase, GroupBase, OtkazAgregateBase, AgregateBase, SystemBase, PodrazdBase
-from forms.otkaz_dialog import AddOtkazDialog, EditOtkazDialog
+from data.data import PlaneBase, GroupBase, OtkazAgregateBase, PodrazdBase
 
 
 class IspravnostFrame(QFrame):
@@ -20,10 +19,15 @@ class IspravnostFrame(QFrame):
         podr_data = PodrazdBase.select()
         for i, podr in enumerate(podr_data):
             group = PodrGroup(podr)
-            group.load_planes()
+            group.open_signal.connect(self.open_dialog)
             row = i // 2
             col = i % 2
             self.podr_layout.addWidget(group, row, col)
+
+    def open_dialog(self, btn:PlaneBtn):
+        dialog = PlaneIspravnost(btn.plane)
+        if dialog.exec():
+            btn.update_color()
 
     def clear_layout(self, layout):
         while layout.count():
@@ -40,10 +44,6 @@ class IspravnostFrame(QFrame):
     def update_podr(self):
         self.clear_layout(self.podr_layout)
         self.load_data()
-
-    def update_planes(self):
-        for plane_bnt in self.findChildren(PlaneBtn):
-            plane_bnt.update_color()
 
 
 class PlaneIspravnost(QDialog):
@@ -73,20 +73,7 @@ class PlaneIspravnost(QDialog):
         self.control_layout.addStretch()
         self.control_layout.addWidget(self.add_btn)
 
-        self.status_label = QLabel("Загрузка данных...")
-        self.status_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        self.status_label.setStyleSheet("""
-             QLabel {
-                 background-color: #f0f0f0;
-                 padding: 5px;
-                 border-top: 1px solid #cccccc;
-                 font-weight: bold;
-             }
-         """)
-
-        self.model = IspravnostTableModel(data=OtkazAgregateBase.select().where(id == self.plane.id))
-        self.table_view = IspravnostTableView(parent=self)
-        self.table_view.setModel(self.model)
+        self.table_view = IspravnostTableView(plane=plane)
         self.setup_ui()
         self.load_data()
 
@@ -101,47 +88,128 @@ class PlaneIspravnost(QDialog):
     def refresh_data(self):
         self.load_data()
 
-    def update_status(self, query):
-        self.status_label.setText(f'Загружено {len(query)} блоков и агрегатов.')
-
     def on_double_click(self, index):
         model = self.table_view.model()
         if isinstance(model, IspravnostTableModel):
-            row = index.row()
-            item_id = model.get_item_id(row)
+            item_id = model.get_item(index)
             if item_id:
                 dialog = EditOtkazDialog(OtkazAgregateBase.get(item_id))
-                if dialog.exec() == QDialog.DialogCode.Accepted:
+                if dialog.exec():
                     self.refresh_data()
 
     def setup_ui(self):
         self.main_layout.addWidget(self.control_panel)
         self.main_layout.addWidget(self.table_view)
-        self.main_layout.addWidget(self.status_label)
 
         # Настройка таблицы
         self.table_view.set_span_for_groups()
-        self.table_view.horizontalHeader().setStretchLastSection(True)
-        self.table_view.verticalHeader().setVisible(False)
         self.table_view.setSortingEnabled(False)
 
         # Подключаем двойной клик
         self.table_view.doubleClicked.connect(self.on_double_click)
 
     def load_data(self, category_filter=None):
+        self.table_view.table_model.load_data()
+        self.table_view.set_span_for_groups()
+
+
+class AddOtkazDialog(QDialog):
+    def __init__(self, plane: PlaneBase, parent=None):
+        super().__init__(parent)
+        self.plane = plane
+        self.setWindowTitle("Добавление отказавшего блока/агрегата")
+        self.setModal(True)
+        self.setFixedSize(350, 250)
+
+        layout = QVBoxLayout()
+        form_layout = QFormLayout()
+
+        self.group_combo = GroupComboBox()
+        self.system_combo = SystemComboBox()
+        self.agregate_combo = AgregateComboBox()
+
+        self.group_combo.currentTextChanged.connect(self.system_combo.set_filter)
+        self.system_combo.currentTextChanged.connect(self.agregate_combo.set_filter)
+
+        self.agregate_number = QLineEdit()
+        self.remove_checkbox = QCheckBox()
+        self.desc = QLineEdit()
+
+        form_layout.addRow("Группа обслуживания:", self.group_combo)
+        form_layout.addRow("Система самолета:", self.system_combo)
+        form_layout.addRow("Агрегат/блок:", self.agregate_combo)
+        form_layout.addRow("Номер блока/агрегата:", self.agregate_number)
+        form_layout.addRow("Агрегат снят?", self.remove_checkbox)
+        form_layout.addRow("Примечание:", self.desc)
+
+        layout.addLayout(form_layout)
+
+        self.button_box = QDialogButtonBox()
+        self.save_button = self.button_box.addButton("Сохранить", QDialogButtonBox.ButtonRole.AcceptRole)
+        self.cancel_button = self.button_box.addButton("Отмена", QDialogButtonBox.ButtonRole.RejectRole)
+
+        self.save_button.clicked.connect(self.create_item) # type: ignore
+        self.cancel_button.clicked.connect(self.reject) # type: ignore
+
+        layout.addWidget(self.button_box)
+        self.setLayout(layout)
+
+    def create_item(self):
         try:
-            query = (OtkazAgregateBase
-                     .select()
-                     .join(AgregateBase)
-                     .join(SystemBase)
-                     .join(GroupBase)
-                     .where(OtkazAgregateBase.plane == self.plane.id))
+            agregate = self.agregate_combo.currentData()
 
-            if category_filter and category_filter != "Все группы":
-                query = query.where(GroupBase.name == category_filter)
+            OtkazAgregateBase.create(
+                agregate=agregate,
+                plane=self.plane.id,
+                number=self.agregate_number.text(),
+                removed=self.remove_checkbox.isChecked(),
+                description=self.desc.text()
+            )
+            self.accept()
 
-            self.model.load_data(query)
-            self.table_view.set_span_for_groups()
-            self.update_status(query)
         except Exception as e:
-            QMessageBox.warning(self, "Ошибка", f"Ошибка при загрузке данных: {str(e)}")
+            QMessageBox.warning(self, "Ошибка", f"Не удалось добавить агрегат/блок: {str(e)}")
+
+
+class EditOtkazDialog(AddOtkazDialog):
+    def __init__(self, otkaz_agregate: OtkazAgregateBase, parent=None):
+        super().__init__(otkaz_agregate.plane, parent) # type: ignore
+        self.otkaz_agregate = otkaz_agregate
+        self.setWindowTitle('Изменить')
+        self.save_button.clicked.disconnect() # type: ignore
+        self.save_button.clicked.connect(self.edit_item) # type: ignore
+        delete_button = self.button_box.addButton("Удалить", QDialogButtonBox.ButtonRole.DestructiveRole)
+        delete_button.clicked.connect(self.delete_item) # type: ignore
+        self.load_data()
+
+    def load_data(self):
+        self.group_combo.setCurrentText(self.otkaz_agregate.agregate.system.group.name)
+        self.system_combo.setCurrentText(self.otkaz_agregate.agregate.system.name)
+        self.agregate_combo.setCurrentText(self.otkaz_agregate.agregate.name)
+        self.agregate_number.setText(str(self.otkaz_agregate.number))
+        self.remove_checkbox.setChecked(self.otkaz_agregate.removed) # type: ignore
+        self.desc.setText(str(self.otkaz_agregate.description))
+
+    def edit_item(self):
+        try:
+            agregate = self.agregate_combo.currentData()
+            item = self.otkaz_agregate
+            item.agregate = agregate
+            item.number = self.agregate_number.text() # type: ignore
+            item.removed = self.remove_checkbox.isChecked() # type: ignore
+            item.description = self.desc.text() # type: ignore
+            item.save()
+            self.accept()
+
+        except Exception as e:
+            QMessageBox.warning(self, "Ошибка", f"Не удалось сохранить агрегат/блок: {str(e)}")
+
+    def delete_item(self):
+        try:
+            item = self.otkaz_agregate
+            item.delete_instance()
+
+            self.accept()
+
+        except Exception as e:
+            QMessageBox.warning(self, "Ошибка", f"Не удалось удалить агрегат/блок: {str(e)}")

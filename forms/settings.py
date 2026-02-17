@@ -1,4 +1,4 @@
-from PyQt6.QtCore import pyqtSignal, Qt
+from PyQt6.QtCore import pyqtSignal 
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QPushButton, QHBoxLayout,
     QFormLayout, QLineEdit, QMessageBox
@@ -50,42 +50,37 @@ class UnDialog(QDialog):
 
     def add_item(self):
         """Переопределяется в наследниках."""
-        pass
+        NotImplementedError()
 
     def edit_item(self, item):
         """Переопределяется в наследниках."""
-        pass
+        NotImplementedError()
 
     def delete_item(self, item):
         """Переопределяется в наследниках."""
-        pass
+        NotImplementedError()
 
     def refresh_data(self, **kwargs):
         """Обновление данных таблицы."""
         if hasattr(self.table, 'table_model'):
             self.table.table_model.load_data(**kwargs)
 
-    def handle_crud_dialog(self, dialog_class, method='add', item=None, **dialog_kwargs):
+    def handle_dialog(self, dialog_class, method='add', item=None, **dialog_kwargs):
         """
         Общий метод для открытия диалогов добавления/редактирования.
         """
         dialog = dialog_class(self)
-        if hasattr(dialog, 'updated'):
-            dialog.updated.connect(self.refresh_data)
+        dialog.updated.connect(self.refresh_data)
 
         if method == 'add':
             dialog.add_dialog(**dialog_kwargs)
-        else:  # edit
+        else:
             dialog.edit_dialog(item)
 
         if dialog.exec():
             self.updated.emit()
             return dialog
         return None
-
-
-class FilteredSettingsDialog(UnDialog):
-    """Базовый класс для диалогов с фильтрацией (добавляет фильтры сверху)."""
 
     def setup_filters(self, filter_widgets):
         """Размещение виджетов фильтрации перед таблицей."""
@@ -135,7 +130,7 @@ class UnAddEditDialog(QDialog):
         self.btn_ok.setText('Сохранить')
 
     def show_error(self, message):
-        """Показать сообщение об ошибке."""
+        """Показать сообщение ошибке."""
         QMessageBox.warning(self, "Ошибка", message)
 
 
@@ -148,13 +143,12 @@ class SingleFieldMixin:
     def __init__(self, field_label, parent=None):
         # Сохраняем label для последующего использования
         self.field_label = field_label
-        # Важно: вызываем super() без parent, т.к. parent уже передан в конструкторе
-        super().__init__(parent)
+        super().__init__()
 
     def init_field(self):
         """Инициализация поля ввода (должен вызываться после super().__init__)."""
         self.field_edit = QLineEdit()
-        self.form_layout.addRow(self.field_label, self.field_edit)
+        self.form_layout.addRow(self.field_label, self.field_edit) # type: ignore
 
     def set_field_text(self, text):
         self.field_edit.setText(text)
@@ -173,10 +167,10 @@ class SettingsPlaneType(UnDialog):
         self.setup_ui(PlaneTypesTable)
 
     def add_item(self):
-        self.handle_crud_dialog(AddPlaneType, 'add')
+        self.handle_dialog(AddPlaneType, 'add')
 
     def edit_item(self, item):
-        self.handle_crud_dialog(AddPlaneType, 'edit', item)
+        self.handle_dialog(AddPlaneType, 'edit', item)
 
     def delete_item(self, item):
         self.table.table_model.delete_item(item)
@@ -191,10 +185,10 @@ class SettingsPodrazd(UnDialog):
         self.setup_ui(PodrazdTable)
 
     def add_item(self):
-        self.handle_crud_dialog(AddPodrazd, 'add')
+        self.handle_dialog(AddPodrazd, 'add')
 
     def edit_item(self, item):
-        self.handle_crud_dialog(AddPodrazd, 'edit', item)
+        self.handle_dialog(AddPodrazd, 'edit', item)
 
     def delete_item(self, item):
         self.table.table_model.delete_item(item)
@@ -202,7 +196,7 @@ class SettingsPodrazd(UnDialog):
         self.updated.emit()
 
 
-class SettingsGroup(FilteredSettingsDialog):
+class SettingsGroup(UnDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Группы обслуживания")
@@ -222,13 +216,13 @@ class SettingsGroup(FilteredSettingsDialog):
     def add_item(self):
         # Передаём выбранный тип в диалог добавления
         selected_type = self.type_combo.currentData()
-        self.handle_crud_dialog(
+        self.handle_dialog(
             AddGroup, 'add',
             plane_type=selected_type if selected_type else None
         )
 
     def edit_item(self, item):
-        self.handle_crud_dialog(AddGroup, 'edit', item)
+        self.handle_dialog(AddGroup, 'edit', item)
 
     def delete_item(self, item):
         self.table.table_model.delete_item(item)
@@ -236,7 +230,7 @@ class SettingsGroup(FilteredSettingsDialog):
         self.updated.emit()
 
 
-class SettingsAgregate(FilteredSettingsDialog):
+class SettingsAgregate(UnDialog):
     add_signal = pyqtSignal(object, object, object)
 
     def __init__(self, parent=None):
@@ -275,7 +269,7 @@ class SettingsAgregate(FilteredSettingsDialog):
         self.system_combo.set_filter(text)
         self.refresh_data(**self.get_filter_params())
 
-    def on_system_changed(self, text):
+    def on_system_changed(self):
         self.refresh_data(**self.get_filter_params())
 
     def add_item(self):
@@ -311,12 +305,14 @@ class SettingsPlanes(UnDialog):
         super().__init__(parent)
         self.setWindowTitle("Самолеты")
         self.setup_ui(PlanesTable)
+        self.plane_type = PlaneTypeComboBox()
+        self.plane_type.currentTextChanged.connect(self.table.tab)
 
     def add_item(self):
-        self.handle_crud_dialog(AddPlane, 'add')
+        self.handle_dialog(AddPlane, 'add')
 
     def edit_item(self, item):
-        self.handle_crud_dialog(AddPlane, 'edit', item)
+        self.handle_dialog(AddPlane, 'edit', item)
 
     def delete_item(self, item):
         self.table.table_model.delete_item(item)
@@ -398,7 +394,7 @@ class AddGroup(UnAddEditDialog):
 
     def add_dialog(self, plane_type=None):
         if plane_type and isinstance(plane_type, TypeBase):
-            self.type_combo.setCurrentText(plane_type.name)
+            self.type_combo.setCurrentText(str(plane_type.name))
 
     def edit_dialog(self, item):
         super().edit_dialog(item)
@@ -450,7 +446,7 @@ class AddAgregate(UnAddEditDialog):
         self.system_combo.currentIndexChanged.connect(self.update_state)
         self.agregate_edit.textChanged.connect(self.update_state)
 
-        # Привязываем фильтрацию дочерних комбобоксов
+
         self.type_combo.currentTextChanged.connect(self.group_combo.set_filter)
         self.group_combo.currentTextChanged.connect(self.system_combo.set_filter)
 
@@ -475,11 +471,11 @@ class AddAgregate(UnAddEditDialog):
     def add_dialog(self, filter_type=None, filter_group=None, filter_system=None):
         """Предустановка фильтров из родительского диалога."""
         if isinstance(filter_type, TypeBase):
-            self.type_combo.setCurrentText(filter_type.name)
+            self.type_combo.setCurrentText(str(filter_type.name))
         if isinstance(filter_group, GroupBase):
-            self.group_combo.setCurrentText(filter_group.name)
+            self.group_combo.setCurrentText(str(filter_group.name))
         if isinstance(filter_system, SystemBase):
-            self.system_combo.setCurrentText(filter_system.name)
+            self.system_combo.setCurrentText(str(filter_system.name))
 
     def edit_dialog(self, item):
         super().edit_dialog(item)
