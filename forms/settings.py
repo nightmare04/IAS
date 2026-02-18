@@ -82,11 +82,6 @@ class UnDialog(QDialog):
             return dialog
         return None
 
-    def setup_filters(self, filter_widgets):
-        """Размещение виджетов фильтрации перед таблицей."""
-        for widget in filter_widgets:
-            self.main_layout.insertWidget(self.main_layout.count() - 1, widget)
-
 
 # ----------------------------------------------------------------------
 # Базовый класс для диалогов добавления/редактирования записи
@@ -203,12 +198,12 @@ class SettingsGroup(UnDialog):
 
         # Фильтр по типу самолёта
         self.type_combo = PlaneTypeComboBox()
-        self.type_combo.currentTextChanged.connect(self.on_type_changed)
-        self.setup_filters([self.type_combo])
+        # self.type_combo.currentTextChanged.connect(self.)
 
         # Таблица
         self.setup_ui(GroupTable, {'parent': self})
-
+        self.main_layout.insertWidget(0, self.type_combo)
+   
     def on_type_changed(self, text):
         if hasattr(self.table, 'set_filter'):
             self.table.set_filter(text)
@@ -242,16 +237,21 @@ class SettingsAgregate(UnDialog):
         self.group_combo = GroupComboBox()
         self.system_combo = SystemComboBox()
 
-        # Связи
-        self.plane_type_combo.currentTextChanged.connect(self.on_plane_type_changed)
-        self.group_combo.currentTextChanged.connect(self.on_group_changed)
-        self.system_combo.currentTextChanged.connect(self.on_system_changed)
+        self.plane_type_combo.changed.connect(self.group_combo.set_filter)
+        self.group_combo.changed.connect(self.system_combo.set_filter)
 
-        # Размещаем фильтры сверху
-        self.setup_filters([self.plane_type_combo, self.group_combo, self.system_combo])
+        self.plane_type_combo.currentTextChanged.connect(self.on_data_changed)
+        self.plane_type_combo.currentTextChanged.connect(self.on_data_changed)
+        self.system_combo.currentTextChanged.connect(self.on_data_changed)
 
         # Таблица
         self.setup_ui(AgregateTable)
+
+        # Размещаем фильтры сверху
+        self.main_layout.insertWidget(0, self.plane_type_combo)
+        self.main_layout.insertWidget(1, self.group_combo)
+        self.main_layout.insertWidget(2, self.system_combo)
+
 
     def get_filter_params(self):
         """Возвращает текущие выбранные объекты фильтров."""
@@ -261,15 +261,8 @@ class SettingsAgregate(UnDialog):
             'filter_system': self.system_combo.currentData()
         }
 
-    def on_plane_type_changed(self, text):
-        self.group_combo.set_filter(text)
-        self.refresh_data(**self.get_filter_params())
 
-    def on_group_changed(self, text):
-        self.system_combo.set_filter(text)
-        self.refresh_data(**self.get_filter_params())
-
-    def on_system_changed(self):
+    def on_data_changed(self):
         self.refresh_data(**self.get_filter_params())
 
     def add_item(self):
@@ -310,8 +303,8 @@ class SettingsPlanes(UnDialog):
         self.plane_type.changed.connect(self.set_filter)
         self.podrazd = PodrazdComboBox()
         self.podrazd.changed.connect(self.set_filter)
-        self.layout().insertWidget(0, self.plane_type)
-        self.layout().insertWidget(1, self.podrazd)
+        self.main_layout.insertWidget(0, self.plane_type)
+        self.main_layout.insertWidget(1, self.podrazd)
 
     def set_filter(self):
         filter_dict = {
