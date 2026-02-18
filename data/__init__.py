@@ -1,0 +1,42 @@
+"""Data package - backward compatibility module."""
+from data.data import (
+    db,
+    TypeBase,
+    PodrazdBase,
+    GroupBase,
+    SystemBase,
+    AgregateBase,
+    PlaneBase,
+    OsobBase,
+    OsobPlaneBase,
+    OsobSystemAddBase,
+    OsobSystemRemoveBase,
+    OsobAgregateAddBase,
+    OsobAgregateRemoveBase,
+    OtkazAgregateBase,
+    get_systems_for_plane,
+    get_agregates_for_plane,
+)
+from data.init_tables import create_tables, drop_tables, fill_tables
+
+__all__ = [
+    "db",
+    "TypeBase",
+    "PodrazdBase",
+    "GroupBase",
+    "SystemBase",
+    "AgregateBase",
+    "PlaneBase",
+    "OsobBase",
+    "OsobPlaneBase",
+    "OsobSystemAddBase",
+    "OsobSystemRemoveBase",
+    "OsobAgregateAddBase",
+    "OsobAgregateRemoveBase",
+    "OtkazAgregateBase",
+    "get_systems_for_plane",
+    "get_agregates_for_plane",
+    "create_tables",
+    "drop_tables",
+    "fill_tables",
+]
