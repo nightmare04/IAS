@@ -1,6 +1,5 @@
 from PyQt6.QtCore import QAbstractListModel, Qt, pyqtSignal
 from PyQt6.QtWidgets import QComboBox
-
 from data.data import TypeBase, GroupBase, SystemBase, AgregateBase, PodrazdBase
 
 
@@ -11,16 +10,19 @@ class ComboBoxModel(QAbstractListModel):
         self._peewee_model = peewee_model
         self._first_string = first_string
         self.display_field = display_field
-        self.query_filter = None
+        self.filter = {}
         self._data = []
         self.load_data()
 
+    def get_filtered_query(self):
+        query = self._peewee_model.select() # type: ignore
+        for k,v in self.filter.items():
+            query = query.where(getattr(self._peewee_model, k) == v)
+        return query
+
     def load_data(self):
         self._data = []
-        if self.query_filter is not None:
-            query = self.query_filter
-        else:
-            query = self._peewee_model.select()
+        query = self.get_filtered_query()
         self._data = list(query)
         if self._first_string:
             self._data.insert(0, self._first_string)
@@ -59,6 +61,9 @@ class IASComboBox(QComboBox):
     def emit_changed(self, index):
         item = self.itemData(index, role=Qt.ItemDataRole.UserRole)
         self.changed.emit(item)
+    
+    def set_filter(self):
+        pass    
         
 
 class PlaneTypeComboBox(IASComboBox):
@@ -66,7 +71,7 @@ class PlaneTypeComboBox(IASComboBox):
         super().__init__(parent)
         self._model = ComboBoxModel(peewee_model=TypeBase, first_string='Выберите тип самолета')
         self.setModel(self._model)
-
+        
 
 class PodrazdComboBox(IASComboBox):
     def __init__(self, parent=None):
@@ -81,31 +86,21 @@ class GroupComboBox(IASComboBox):
         self._model = ComboBoxModel(peewee_model=GroupBase, first_string='Выберите группу обслуживания')
         self.setModel(self._model)
 
-    def set_filter(self, plane_type_str):
-        plane_type = TypeBase.get_or_none(TypeBase.name == plane_type_str)
-        query = (GroupBase
-                 .select()
-                 .where(GroupBase.plane_type == plane_type)
-                 )
-        self._model.query_filter = query
-        self._model.refresh()
-
-
+    def set_filter(self, plane_type: TypeBase):
+        self._model.filter = {'plane_type': plane_type}
+        self._model.load_data()
+        
+        
 class SystemComboBox(IASComboBox):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._model = ComboBoxModel(peewee_model=SystemBase, first_string='Выберите систему самолета')
         self.setModel(self._model)
 
-    def set_filter(self, group_str):
-        group = GroupBase.get_or_none(GroupBase.name == group_str)
-        query = (SystemBase
-                 .select()
-                 .where(SystemBase.group == group)
-                 )
-        self._model.query_filter = query
-        self._model.refresh()
-
+    def set_filter(self, group: GroupBase):
+        self._model.filter = {'group': group}
+        self._model.load_data()
+        
 
 class AgregateComboBox(IASComboBox):
     def __init__(self, parent=None):
@@ -113,11 +108,6 @@ class AgregateComboBox(IASComboBox):
         self._model = ComboBoxModel(peewee_model=AgregateBase, first_string='Выберите блок/агрегат самолета')
         self.setModel(self._model)
 
-    def set_filter(self, system_str):
-        system = SystemBase.get_or_none(SystemBase.name == system_str)
-        query = (AgregateBase
-                 .select()
-                 .where(AgregateBase.system == system)
-                 )
-        self._model.query_filter = query
-        self._model.refresh()
+    def set_filter(self, system: SystemBase):
+        self._model.filter = {'system': system}
+        self._model.load_data()
