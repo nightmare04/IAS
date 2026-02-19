@@ -77,7 +77,7 @@ class IspravnostTable(UnTableView):
         self.clear_all_span()
         if isinstance(self.table_model, IspravnostTableModel):
             for row in range(self.table_model.rowCount()):
-                if self.table_model.is_group_row(row):
+                if self.table_model.get_row_type(row) == 'group':
                     self.setSpan(row, 0, 1, self.table_model.columnCount())
 
     def clear_all_span(self) -> None:
