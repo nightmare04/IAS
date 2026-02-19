@@ -16,6 +16,61 @@ from app.models.failures import OtkazAgregateBase
 from app.models.osob import OsobBase
 
 
+class UnTableModel(QAbstractTableModel):
+    """Base table model with common functionality."""
+
+    HEADERS: list[str] = []
+
+    def __init__(self, parent: Any | None = None) -> None:
+        super().__init__(parent)
+        self._data: list[list[Any]] = []
+        self._headers: list[str] = []
+        self.load_data()
+
+    def load_data(self) -> None:
+        """Load data from database. Override in subclasses."""
+        pass
+
+    def rowCount(self, parent: Any | None = None) -> int:
+        """Return number of rows."""
+        return len(self._data)
+
+    def columnCount(self, parent: Any | None = None) -> int:
+        """Return number of columns."""
+        return len(self._headers)
+
+    def data(self, index: Any, role: Qt.ItemDataRole = Qt.ItemDataRole.DisplayRole) -> Any:
+        """Return data for the given index and role."""
+        if not index.isValid():
+            return None
+        row = index.row()
+        col = index.column()
+
+        if 0 <= row < self.rowCount() and 0 <= col < self.columnCount():
+            if role == Qt.ItemDataRole.DisplayRole:
+                return self._data[row][col + 1]
+            elif role == Qt.ItemDataRole.UserRole:
+                return self._data[row][0]
+        return None
+
+    def headerData(
+        self, section: int, orientation: Qt.Orientation, role: Qt.ItemDataRole = Qt.ItemDataRole.DisplayRole
+    ) -> Any:
+        """Return header data."""
+        if role == Qt.ItemDataRole.DisplayRole and orientation == Qt.Orientation.Horizontal:
+            return self.HEADERS[section]
+        return None
+
+    def clear_data(self) -> None:
+        """Clear all data."""
+        self._data = []
+
+    @staticmethod
+    def delete_item(item: Any) -> None:
+        """Delete item from database."""
+        item.delete_instance()
+
+
 class IspravnostTableModel(QAbstractTableModel):
     """Table model for aircraft serviceability data with grouping."""
 
@@ -150,64 +205,6 @@ class IspravnostTableModel(QAbstractTableModel):
             return self.HEADERS[section]
         return None
 
-    def is_group_row(self, row: int) -> bool:
-        """Check if row is a group header row."""
-        return row in self._group_rows
-
-    @staticmethod
-    def delete_item(item: Any) -> None:
-        """Delete item from database."""
-        item.delete_instance()
-
-
-class UnTableModel(QAbstractTableModel):
-    """Base table model with common functionality."""
-
-    def __init__(self, parent: Any | None = None) -> None:
-        super().__init__(parent)
-        self._data: list[list[Any]] = []
-        self._headers: list[str] = []
-        self.load_data()
-
-    def load_data(self) -> None:
-        """Load data from database. Override in subclasses."""
-        pass
-
-    def rowCount(self, parent: Any | None = None) -> int:
-        """Return number of rows."""
-        return len(self._data)
-
-    def columnCount(self, parent: Any | None = None) -> int:
-        """Return number of columns."""
-        return len(self._headers)
-
-    def data(self, index: Any, role: Qt.ItemDataRole = Qt.ItemDataRole.DisplayRole) -> Any:
-        """Return data for the given index and role."""
-        if not index.isValid():
-            return None
-        row = index.row()
-        col = index.column()
-
-        if 0 <= row < self.rowCount() and 0 <= col < self.columnCount():
-            if role == Qt.ItemDataRole.DisplayRole:
-                return self._data[row][col + 1]
-            elif role == Qt.ItemDataRole.UserRole:
-                return self._data[row][0]
-        return None
-
-    def headerData(
-        self, section: int, orientation: Qt.Orientation, role: Qt.ItemDataRole = Qt.ItemDataRole.DisplayRole
-    ) -> Any:
-        """Return header data."""
-        if role == Qt.ItemDataRole.DisplayRole:
-            if orientation == Qt.Orientation.Horizontal:
-                return self._headers[section]
-        return None
-
-    def clear_data(self) -> None:
-        """Clear all data."""
-        self._data = []
-
     @staticmethod
     def delete_item(item: Any) -> None:
         """Delete item from database."""
@@ -216,10 +213,12 @@ class UnTableModel(QAbstractTableModel):
 
 class PlanesTypesModel(UnTableModel):
     """Table model for aircraft types."""
+    HEADERS: list[str] = [
+        "Наименование",
+    ]
 
     def __init__(self, parent: Any | None = None) -> None:
         super().__init__(parent)
-        self._headers = ["Наименование"]
 
     def load_data(self) -> None:
         """Load aircraft types."""
@@ -233,10 +232,12 @@ class PlanesTypesModel(UnTableModel):
 
 class PodrazdModel(UnTableModel):
     """Table model for divisions."""
+    HEADERS: list[str] = [
+        "Наименование",
+    ]
 
     def __init__(self, parent: Any | None = None) -> None:
         super().__init__(parent)
-        self._headers = ["Наименование"]
 
     def load_data(self) -> None:
         """Load divisions."""
@@ -250,10 +251,13 @@ class PodrazdModel(UnTableModel):
 
 class GroupModel(UnTableModel):
     """Table model for maintenance groups."""
+    HEADERS: list[str] = [
+        "Группа",
+        "Тип"
+    ]
 
     def __init__(self, parent: Any | None = None) -> None:
         super().__init__(parent)
-        self._headers = ["Группа", "Тип"]
 
     def load_data(self, filter_str: str | None = None) -> None:
         """Load maintenance groups with optional filter."""
@@ -269,10 +273,14 @@ class GroupModel(UnTableModel):
 
 class SystemModel(UnTableModel):
     """Table model for aircraft systems."""
+    HEADERS: list[str] = [
+        "Система",
+        "Группа обслуживания",
+        "Тип самолета"
+    ]
 
     def __init__(self, parent: Any | None = None) -> None:
         super().__init__(parent)
-        self._headers = ["Система", "Группа обслуживания", "Тип самолета"]
 
     def load_data(self, filter_str: str | None = None) -> None:
         """Load systems with optional filter."""
@@ -289,9 +297,15 @@ class SystemModel(UnTableModel):
 class AgregateModel(UnTableModel):
     """Table model for aggregates/units."""
 
+    HEADERS: list[str] = [
+        "Блок/Агрегат",
+        "Система",
+        "Группа",
+        "Тип самолета"
+    ]
+
     def __init__(self, parent: Any | None = None) -> None:
         super().__init__(parent)
-        self._headers = ["Блок/Агрегат", "Система", "Группа", "Тип самолета"]
 
     def load_data(
         self,
@@ -332,6 +346,12 @@ class AgregateModel(UnTableModel):
 class PlanesModel(UnTableModel):
     """Table model for aircraft."""
 
+    HEADERS: list[str] = [
+        "Тип самолета",
+        "Подразделение",
+        "Бортовой номер",
+    ]
+
     def __init__(self, parent: Any | None = None) -> None:
         self.filter: dict[str, Any] = {}
         super().__init__(parent)
@@ -346,7 +366,6 @@ class PlanesModel(UnTableModel):
         self.beginResetModel()
         self.clear_data()
         query = PlaneBase.select()
-        self._headers = ["Тип самолета", "Подразделение", "Бортовой номер"]
 
         if isinstance(self.filter.get("plane_type"), TypeBase):
             query = query.where(PlaneBase.plane_type == self.filter["plane_type"])
@@ -363,6 +382,11 @@ class PlanesModel(UnTableModel):
 
 class OsobModel(UnTableModel):
     """Table model for aircraft features."""
+
+    HEADERS: list[str] = [
+        "Тип самолета",
+        "Особенности",
+    ]
 
     def __init__(self, parent: Any | None = None) -> None:
         super().__init__(parent)
