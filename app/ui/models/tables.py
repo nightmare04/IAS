@@ -16,6 +16,21 @@ from app.models.failures import OtkazAgregateBase
 from app.models.osob import OsobBase
 
 
+class TableModel(QAbstractTableModel):
+    HEADERS: list[str] = []
+
+    def __init__(self, data_model, parent=None, **kwargs) -> None:
+        super().__init__(parent)
+        self.data_model = data_model
+        self.filter_args = {}
+        self.filter_args.update(kwargs)
+        self._data = data_model.select()
+
+    def _filter_data(self):
+        if self.filter_args.get('plane_type') is not None:
+            self._data = self._data.where(self.data_model.plane_type == self.filter_args.get('plane_type'))
+
+
 class UnTableModel(QAbstractTableModel):
     """Base table model with common functionality."""
 
@@ -24,7 +39,6 @@ class UnTableModel(QAbstractTableModel):
     def __init__(self, parent: Any | None = None) -> None:
         super().__init__(parent)
         self._data: list[list[Any]] = []
-        self._headers: list[str] = []
         self.load_data()
 
     def load_data(self) -> None:
@@ -37,7 +51,7 @@ class UnTableModel(QAbstractTableModel):
 
     def columnCount(self, parent: Any | None = None) -> int:
         """Return number of columns."""
-        return len(self._headers)
+        return len(self.HEADERS)
 
     def data(self, index: Any, role: Qt.ItemDataRole = Qt.ItemDataRole.DisplayRole) -> Any:
         """Return data for the given index and role."""
