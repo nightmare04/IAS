@@ -19,20 +19,24 @@ from app.models.osob import OsobBase
 class IspravnostTableModel(QAbstractTableModel):
     """Table model for aircraft serviceability data with grouping."""
 
+    HEADERS: list[str] = [
+        "Наименование",
+        "Система",
+        "Номер агрегата/блока",
+        "Снят",
+        "Примечание",
+    ]
+
+    GROUP_BG_COLOR = QColor(220, 220, 220)
+    GROUP_FG_COLOR = QColor(0, 0, 139)
+    ROW_BG_COLOR = QColor(255, 255, 255)
+
     def __init__(self, plane: PlaneBase, parent: Any | None = None) -> None:
         super().__init__(parent)
         self.plane = plane
         self._data: list[Any] = []
-        self._headers: list[str] = [
-            "Наименование",
-            "Система",
-            "Номер агрегата/блока",
-            "Снят",
-            "Примечание",
-        ]
         self._prepared_data: list[list[Any]] = []
-        self._group_rows: list[int] = []
-        self._group_values: list[Any] = []
+        self._group_rows: set[int] = set()
         self._row_type: list[str] = []
         self.load_data()
 
@@ -40,39 +44,46 @@ class IspravnostTableModel(QAbstractTableModel):
         """Load failure data for the aircraft."""
         self.beginResetModel()
         self._prepared_data = []
-        self._group_rows = []
-        self._group_values = []
+        self._group_rows = set()
         self._row_type = []
 
-        self._data = OtkazAgregateBase.select().where(OtkazAgregateBase.plane == self.plane)
-        sorted_data = sorted(self._data, key=lambda x: str(x.agregate.system.name))
+        self._data = (OtkazAgregateBase
+                      .select()
+                      .where(OtkazAgregateBase.plane == self.plane)
+                      .order_by(OtkazAgregateBase.agregate.system.name))
 
         current_group: str | None = None
-        row_idx = 0
 
-        for item in sorted_data:
+        for item in self._data:
             group_value = str(item.agregate.system.group.name)
             if group_value != current_group:
-                self._prepared_data.append([group_value] * len(self._headers))
-                self._group_rows.append(row_idx)
-                self._row_type.append("group")
-                row_idx += 1
+                self._add_group_row(group_value)
                 current_group = group_value
 
-            removed = "Снят" if item.removed else "На самолете"
-            row_data = [
-                item,
-                item.agregate.name,
-                item.agregate.system.name,
-                item.number,
-                removed,
-                item.description,
-            ]
-            self._prepared_data.append(row_data)
-            self._row_type.append("agregate")
-            row_idx += 1
+            self._add_agregate_row(item)
 
         self.endResetModel()
+
+    def _add_group_row(self, group_name: str) -> None:
+        """Add a group header row."""
+        row_idx = len(self._prepared_data)
+        self._prepared_data.append([group_name] * len(self.HEADERS))
+        self._group_rows.add(row_idx)
+        self._row_type.append("group")
+
+    def _add_agregate_row(self, item: Any) -> None:
+        """Add an aggregate data row."""
+        removed = "Снят" if item.removed else "На самолете"
+        row_data = [
+            item,
+            item.agregate.name,
+            item.agregate.system.name,
+            item.number,
+            removed,
+            item.description,
+        ]
+        self._prepared_data.append(row_data)
+        self._row_type.append("agregate")
 
     def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
         """Return number of rows."""
@@ -80,7 +91,7 @@ class IspravnostTableModel(QAbstractTableModel):
 
     def columnCount(self, parent: QModelIndex = QModelIndex()) -> int:
         """Return number of columns."""
-        return len(self._headers)
+        return len(self.HEADERS)
 
     def data(self, index: QModelIndex, role: Qt.ItemDataRole = Qt.ItemDataRole.DisplayRole) -> Any:
         """Return data for the given index and role."""
@@ -90,34 +101,34 @@ class IspravnostTableModel(QAbstractTableModel):
         row = index.row()
         col = index.column()
 
-        if 0 <= row < len(self._prepared_data) and 0 <= col < len(self._headers):
-            if role == Qt.ItemDataRole.DisplayRole:
-                value = self._prepared_data[row][col + 1]
-                return str(value) if value is not None else ""
+        if not (0 <= row < len(self._prepared_data) and 0 <= col < len(self.HEADERS)):
+            return None
 
-            elif role == Qt.ItemDataRole.FontRole and row in self._group_rows:
-                font = QFont()
-                font.setBold(True)
-                font.setPointSize(10)
-                return font
+        is_group = row in self._group_rows
 
-            elif role == Qt.ItemDataRole.UserRole:
-                if self._row_type[row] == "agregate":
-                    return self._prepared_data[row][0]
-                return None
+        if role == Qt.ItemDataRole.DisplayRole:
+            value = self._prepared_data[row][col + 1]
+            return str(value) if value is not None else ""
 
-            elif role == Qt.ItemDataRole.BackgroundRole:
-                if self._row_type[row] == "group":
-                    return QBrush(QColor(220, 220, 220))
-                return QBrush(QColor(255, 255, 255))
+        if role == Qt.ItemDataRole.FontRole and is_group:
+            font = QFont()
+            font.setBold(True)
+            font.setPointSize(10)
+            return font
 
-            elif role == Qt.ItemDataRole.TextAlignmentRole and row in self._group_rows:
-                if col == 0:
-                    return Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
-                return Qt.AlignmentFlag.AlignCenter
+        if role == Qt.ItemDataRole.UserRole:
+            return self._prepared_data[row][0] if self._row_type[row] == "agregate" else None
 
-            elif role == Qt.ItemDataRole.ForegroundRole and row in self._group_rows:
-                return QBrush(QColor(0, 0, 139))
+        if role == Qt.ItemDataRole.BackgroundRole:
+            return QBrush(self.GROUP_BG_COLOR if is_group else self.ROW_BG_COLOR)
+
+        if role == Qt.ItemDataRole.TextAlignmentRole and is_group:
+            if col == 0:
+                return Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
+            return Qt.AlignmentFlag.AlignCenter
+
+        if role == Qt.ItemDataRole.ForegroundRole and is_group:
+            return QBrush(self.GROUP_FG_COLOR)
 
         return None
 
@@ -135,9 +146,8 @@ class IspravnostTableModel(QAbstractTableModel):
         self, section: int, orientation: Qt.Orientation, role: Qt.ItemDataRole = Qt.ItemDataRole.DisplayRole
     ) -> Any:
         """Return header data."""
-        if role == Qt.ItemDataRole.DisplayRole:
-            if orientation == Qt.Orientation.Horizontal:
-                return self._headers[section]
+        if role == Qt.ItemDataRole.DisplayRole and orientation == Qt.Orientation.Horizontal:
+            return self.HEADERS[section]
         return None
 
     def is_group_row(self, row: int) -> bool:

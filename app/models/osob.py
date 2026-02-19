@@ -27,7 +27,7 @@ def get_available_systems_for_plane(plane: PlaneBase, group: Any | None = None) 
         )
 
     # Get base systems for this aircraft type
-    base_query = SystemBase.select().join(SystemBase.group)
+    base_query = SystemBase.select()
     base_query = base_query.where(SystemBase.plane_type == plane.plane_type)
 
     if group:
@@ -61,8 +61,8 @@ def get_available_agregates_for_plane(plane: PlaneBase, system: SystemBase | Non
         )
 
     # Get base agregates for this aircraft type
-    base_query = AgregateBase.select().join(AgregateBase.system)
-    base_query = base_query.where(AgregateBase.system.plane_type == plane.plane_type)
+    base_query = AgregateBase.select().join(SystemBase, on=(AgregateBase.system == SystemBase.id))
+    base_query = base_query.where(SystemBase.plane_type == plane.plane_type)
 
     if system:
         base_query = base_query.where(AgregateBase.system == system)

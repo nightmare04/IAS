@@ -1,7 +1,7 @@
 """Custom table views for IAS application."""
 from typing import Any
 
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal
 from PyQt6.QtGui import QAction
 from PyQt6.QtWidgets import QAbstractItemView, QHeaderView, QMenu, QSizePolicy, QTableView
 
@@ -34,8 +34,8 @@ class UnTableView(QTableView):
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self.show_context_menu)
         header = self.horizontalHeader()
-        header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
-        header.setStretchLastSection(True)
+        header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents) # type: ignore
+        header.setStretchLastSection(True) # type: ignore
 
     def show_context_menu(self, position: Any) -> None:
         """Show context menu at position."""
@@ -53,7 +53,7 @@ class UnTableView(QTableView):
             delete_action.triggered.connect(lambda checked: self.delete_item(item))
             menu.addAction(delete_action)
 
-        menu.exec(self.viewport().mapToGlobal(position))
+        menu.exec(self.viewport().mapToGlobal(position)) # type: ignore
 
     def edit_item(self, item: Any) -> None:
         """Emit edit signal with item."""
@@ -98,7 +98,7 @@ class IspravnostTable(UnTableView):
         """Load data from database."""
         self.table_model.load_data()
         self.clear_all_span()
-        self.set_span_for_groups()
+        QTimer.singleShot(0, self.set_span_for_groups)
 
 
 class PlaneTypesTable(UnTableView):
@@ -127,11 +127,6 @@ class GroupTable(UnTableView):
         self.table_model = GroupModel()
         self.setModel(self.table_model)
 
-    def set_filter(self, filter_str: str) -> None:
-        """Filter table by aircraft type."""
-        self.table_model.load_data(filter_str)
-
-
 class SystemTable(UnTableView):
     """Table view for aircraft systems."""
 
@@ -139,10 +134,6 @@ class SystemTable(UnTableView):
         super().__init__(parent)
         self.table_model = SystemModel()
         self.setModel(self.table_model)
-
-    def set_filter(self, filter_str: str) -> None:
-        """Filter table by aircraft type."""
-        self.table_model.load_data(filter_str)
 
 
 class AgregateTable(UnTableView):
@@ -161,11 +152,6 @@ class PlanesTable(UnTableView):
         super().__init__(parent)
         self.table_model = PlanesModel()
         self.setModel(self.table_model)
-
-    def set_filter(self, filter_str: str) -> None:
-        """Filter table data."""
-        self.table_model.load_data(filter_str)
-
 
 class OsobTable(UnTableView):
     """Table view for aircraft features."""

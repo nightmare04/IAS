@@ -171,7 +171,6 @@ class PlaneIspravnost(QDialog):
         self.main_layout.addWidget(self.control_panel)
         self.main_layout.addWidget(self.table_view)
 
-        self.table_view.set_span_for_groups()
         self.table_view.setSortingEnabled(False)
         self.table_view.doubleClicked.connect(self.on_double_click)
 
@@ -255,7 +254,7 @@ class AddOtkazDialog(QDialog):
 
         # First set group to trigger cascade updates
         group = self.item.agregate.system.group  # type: ignore
-        self.group_combo._model.filter = {"group": group}
+        self.group_combo._model.filter = {"plane_type": self.plane.plane_type}
         self.group_combo._model.load_data()
 
         # Find group index and select it

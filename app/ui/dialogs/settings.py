@@ -158,7 +158,7 @@ class SingleFieldMixin:
     def init_field(self) -> None:
         """Initialize text input field."""
         self.field_edit = QLineEdit()
-        self.form_layout.addRow(self.field_label, self.field_edit)
+        self.form_layout.addRow(self.field_label, self.field_edit) # type: ignore
 
     def set_field_text(self, text: str) -> None:
         """Set field text."""
