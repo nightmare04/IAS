@@ -3,7 +3,7 @@ from typing import Any
 
 from data.models.osob import OsobBase
 
-from .base import UnTableModel, UnTableView
+from .base_table import UnTableModel, UnTableView
 
 
 class OsobModel(UnTableModel):

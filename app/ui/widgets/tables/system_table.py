@@ -3,7 +3,7 @@ from typing import Any
 
 from data.models.aircraft import GroupBase, SystemBase, TypeBase
 
-from .base import UnTableModel, UnTableView
+from .base_table import UnTableModel, UnTableView
 
 
 class SystemModel(UnTableModel):
@@ -17,13 +17,16 @@ class SystemModel(UnTableModel):
     def __init__(self, parent: Any | None = None) -> None:
         super().__init__(parent)
 
-    def load_data(self, filter_str: str | None = None) -> None:
+    def load_data(self, filter: dict | None = None) -> None:
         """Load systems with optional filter."""
         self.beginResetModel()
         self.clear_data()
         query = SystemBase.select().join(GroupBase).join(TypeBase)
-        if filter_str is not None:
-            query = query.where(TypeBase.name == filter_str)
+        if filter is not None:
+            if isinstance(filter.get('plane_type'), TypeBase):
+                query = query.where(SystemBase.plane_type == filter.get('plane_type'))
+            if isinstance(filter.get('group'), GroupBase):
+                query = query.where(SystemBase.group == filter.get('group'))
         for data in query:
             self._data.append([data, data.name, data.group.name, data.plane_type.name])
         self.endResetModel()
@@ -36,3 +39,6 @@ class SystemTable(UnTableView):
         super().__init__(parent)
         self.table_model = SystemModel()
         self.setModel(self.table_model)
+
+    def set_filter(self, filter: dict):
+        self.table_model.load_data(filter=filter)

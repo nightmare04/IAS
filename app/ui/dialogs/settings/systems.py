@@ -1,12 +1,14 @@
 """Dialogs for managing aircraft systems."""
 
+from sre_constants import GROUPREF
 from typing import Any
 
-from data.models.aircraft import GroupBase, SystemBase, TypeBase
 from PyQt6.QtWidgets import QLineEdit
+
 from app.ui.dialogs.settings.base import UnAddEditDialog, UnDialog
 from app.ui.widgets.combo_box import GroupComboBox, PlaneTypeComboBox
 from app.ui.widgets.tables import SystemTable
+from data.models.aircraft import GroupBase, SystemBase, TypeBase
 
 
 class SettingsSystem(UnDialog):
@@ -17,21 +19,33 @@ class SettingsSystem(UnDialog):
         self.setWindowTitle("Системы самолетов")
 
         self.type_combo = PlaneTypeComboBox()
-        self.type_combo.changed.connect(self.on_type_changed)
+        self.group_combo = GroupComboBox()
+
+        self.type_combo.changed.connect(self.group_combo.set_filter)
+        self.type_combo.changed.connect(self.on_data_changed)
+        self.group_combo.changed.connect(self.on_data_changed)
+
 
         self.setup_ui(SystemTable, {"parent": self})
         self.main_layout.insertWidget(0, self.type_combo)
+        self.main_layout.insertWidget(1, self.group_combo)
 
-    def on_type_changed(self, plane_type: Any) -> None:
-        """Filter table by aircraft type."""
-        if plane_type:
-            self.table.set_filter(plane_type.name)
-        else:
-            self.table.set_filter("")
+    def on_data_changed(self, plane_type: Any) -> None:
+        """Filter table."""
+        filter = {
+            "plane_type": self.type_combo.currentData(),
+            "group": self.group_combo.currentData()
+        }
+        self.table.set_filter(filter)
 
     def add_item(self) -> None:
         selected_type = self.type_combo.currentData()
-        self.handle_dialog(AddSystem, "add", plane_type=selected_type if selected_type else None)
+        selected_group = self.group_combo.currentData()
+        selected_dict = {
+            'plane_type' : selected_type,
+            'group': selected_group
+        }
+        self.handle_dialog(AddSystem, "add", selected=selected_dict)
 
     def edit_item(self, item: Any) -> None:
         self.handle_dialog(AddSystem, "edit", item)
@@ -83,11 +97,17 @@ class AddSystem(UnAddEditDialog):
         self.system_edit.setEnabled(type_selected and group_selected)
         self.btn_ok.setEnabled(type_selected and group_selected and name_filled)
 
-    def add_dialog(self, plane_type: TypeBase | None = None) -> None:
-        if plane_type and isinstance(plane_type, TypeBase):
-            self.type_combo.setCurrentText(str(plane_type.name))
-            self.group_combo.set_filter(plane_type)
-            self.group_combo._model.refresh()
+    def add_dialog(self, selected: dict | None = None) -> None:
+        if selected:
+            plane_type = selected.get('plane_type')
+            group = selected.get('group')
+
+            if plane_type and isinstance(plane_type, TypeBase):
+                self.type_combo.setCurrentText(str(plane_type.name))
+                self.group_combo.set_filter(plane_type)
+            if group and isinstance(group, GroupBase):
+                self.group_combo.setCurrentText(str(group.name))
+        # self.group_combo._model.refresh()
 
     def edit_dialog(self, item: Any) -> None:
         super().edit_dialog(item)

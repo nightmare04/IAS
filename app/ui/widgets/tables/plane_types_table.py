@@ -3,7 +3,7 @@ from typing import Any
 
 from data.models.aircraft import TypeBase
 
-from .base import UnTableModel, UnTableView
+from .base_table import UnTableModel, UnTableView
 
 
 class PlanesTypesModel(UnTableModel):

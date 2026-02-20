@@ -7,7 +7,7 @@ from PyQt6.QtGui import QBrush, QColor, QFont
 from data.models.aircraft import PlaneBase
 from data.models.failures import OtkazAgregateBase
 
-from .base import UnTableView
+from .base_table import UnTableView
 
 
 class IspravnostTableModel(QAbstractTableModel):
