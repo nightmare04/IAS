@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import QGridLayout, QGroupBox
 from app.ui.widgets.buttons import PlaneBtn
 
 if TYPE_CHECKING:
-    from app.models.aircraft import PodrazdBase
+    from data.models.aircraft import PodrazdBase
 
 
 class PodrGroup(QGroupBox):
@@ -25,7 +25,7 @@ class PodrGroup(QGroupBox):
 
     def load_planes(self) -> None:
         """Load aircraft buttons for this division."""
-        from app.models.aircraft import PlaneBase
+        from data.models.aircraft import PlaneBase
 
         planes = PlaneBase.select().where(PlaneBase.podrazd == self.podr.id)
         for p, plane in enumerate(planes):

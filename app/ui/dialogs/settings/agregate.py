@@ -5,7 +5,7 @@ from typing import Any
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QLineEdit
 
-from app.models.aircraft import AgregateBase, GroupBase, SystemBase, TypeBase
+from data.models.aircraft import AgregateBase, GroupBase, SystemBase, TypeBase
 from app.ui.dialogs.settings.base import UnAddEditDialog, UnDialog
 from app.ui.widgets.combo_box import GroupComboBox, PlaneTypeComboBox, SystemComboBox
 from app.ui.widgets.tables import AgregateTable

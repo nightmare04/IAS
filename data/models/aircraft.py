@@ -1,7 +1,7 @@
 """Aircraft-related models."""
 from peewee import CharField, ForeignKeyField, IntegerField
 
-from app.models.base import BaseModel
+from .base import BaseModel
 
 
 class TypeBase(BaseModel):

@@ -1,8 +1,8 @@
 """Failure tracking models."""
 from peewee import BooleanField, CharField, ForeignKeyField
 
-from app.models.aircraft import AgregateBase, PlaneBase
-from app.models.base import BaseModel
+from .aircraft import AgregateBase, PlaneBase
+from .base import BaseModel
 
 
 class OtkazAgregateBase(BaseModel):

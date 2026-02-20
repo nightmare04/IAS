@@ -4,7 +4,7 @@ from typing import Any
 
 from PyQt6.QtWidgets import QLineEdit
 
-from app.models.aircraft import PlaneBase
+from data.models.aircraft import PlaneBase
 from app.ui.dialogs.settings.base import UnAddEditDialog, UnDialog
 from app.ui.widgets.combo_box import PlaneTypeComboBox, PodrazdComboBox
 from app.ui.widgets.tables import PlanesTable

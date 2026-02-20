@@ -15,8 +15,8 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from app.models.aircraft import AgregateBase, GroupBase, SystemBase
-from app.models.osob import (
+from data.models.aircraft import AgregateBase, GroupBase, SystemBase
+from data.models.osob import (
     OsobAgregateAddBase,
     OsobAgregateRemoveBase,
     OsobBase,

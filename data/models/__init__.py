@@ -1,5 +1,5 @@
 """Peewee models for IAS application."""
-from app.models.aircraft import (
+from .aircraft import (
     AgregateBase,
     GroupBase,
     PlaneBase,
@@ -7,9 +7,9 @@ from app.models.aircraft import (
     SystemBase,
     TypeBase,
 )
-from app.models.base import BaseModel, db
-from app.models.failures import OtkazAgregateBase
-from app.models.osob import (
+from .base import BaseModel, db
+from .failures import OtkazAgregateBase
+from .osob import (
     OsobAgregateAddBase,
     OsobAgregateRemoveBase,
     OsobBase,

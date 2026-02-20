@@ -4,7 +4,7 @@ from typing import Any
 from PyQt6.QtCore import QAbstractListModel, Qt, pyqtSignal
 from PyQt6.QtWidgets import QComboBox
 
-from app.models.aircraft import AgregateBase, GroupBase, PodrazdBase, SystemBase, TypeBase
+from data.models.aircraft import AgregateBase, GroupBase, PodrazdBase, SystemBase, TypeBase
 
 
 class ComboBoxModel(QAbstractListModel):

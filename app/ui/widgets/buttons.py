@@ -5,7 +5,7 @@ from PyQt6.QtCore import QSize, pyqtSignal
 from PyQt6.QtWidgets import QPushButton
 
 if TYPE_CHECKING:
-    from app.models.aircraft import PlaneBase
+    from data.models.aircraft import PlaneBase
 
 
 class IASButton(QPushButton):
@@ -51,7 +51,7 @@ class PlaneBtn(QPushButton):
     def update_color(self) -> None:
         """Update button color based on failure status."""
         # Import here to avoid circular imports
-        from app.models.failures import OtkazAgregateBase
+        from data.models.failures import OtkazAgregateBase
 
         has_failures = (
             OtkazAgregateBase.select()

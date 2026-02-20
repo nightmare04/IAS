@@ -11,8 +11,8 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from app.models.aircraft import PlaneBase
-from app.models.osob import OsobBase, OsobPlaneBase
+from data.models.aircraft import PlaneBase
+from data.models.osob import OsobBase, OsobPlaneBase
 
 
 class SelectOsobDialog(QDialog):

@@ -1,8 +1,8 @@
 """
 Legacy data module - backward compatibility.
-Imports from app.models structure.
+Imports from data.models structure.
 """
-from app.models import (
+from data.models import (
     TypeBase,
     PodrazdBase,
     GroupBase,

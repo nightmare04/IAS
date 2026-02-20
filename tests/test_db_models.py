@@ -2,8 +2,8 @@
 import pytest
 from peewee import IntegrityError
 
-from app.models.aircraft import TypeBase, PodrazdBase, GroupBase, SystemBase, AgregateBase, PlaneBase
-from app.models.failures import OtkazAgregateBase
+from data.models.aircraft import TypeBase, PodrazdBase, GroupBase, SystemBase, AgregateBase, PlaneBase
+from data.models.failures import OtkazAgregateBase
 
 
 class TestTypeBase:

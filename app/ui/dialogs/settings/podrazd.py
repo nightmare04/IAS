@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from app.models.aircraft import PodrazdBase
+from data.models.aircraft import PodrazdBase
 from app.ui.dialogs.settings.base import SingleFieldMixin, UnAddEditDialog, UnDialog
 from app.ui.widgets.tables import PodrazdTable
 

@@ -3,8 +3,8 @@ from typing import Any
 
 from peewee import CharField, ForeignKeyField
 
-from app.models.aircraft import AgregateBase, PlaneBase, SystemBase, TypeBase
-from app.models.base import BaseModel
+from .aircraft import AgregateBase, PlaneBase, SystemBase, TypeBase
+from .base import BaseModel
 
 
 def get_available_systems_for_plane(plane: PlaneBase, group: Any | None = None) -> list[SystemBase]:

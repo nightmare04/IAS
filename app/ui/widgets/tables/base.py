@@ -1,13 +1,63 @@
 """Base table view for IAS application."""
 from typing import Any
 
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import QAbstractTableModel, Qt, pyqtSignal
 from PyQt6.QtGui import QAction
 from PyQt6.QtWidgets import QAbstractItemView, QHeaderView, QMenu, QSizePolicy, QTableView
 
-from app.ui.models import (
-    UnTableModel,
-)
+
+class UnTableModel(QAbstractTableModel):
+    """Base table model with common functionality."""
+
+    HEADERS: list[str] = []
+
+    def __init__(self, parent: Any | None = None) -> None:
+        super().__init__(parent)
+        self._data: list[list[Any]] = []
+        self.load_data()
+
+    def load_data(self) -> None:
+        """Load data from database. Override in subclasses."""
+        pass
+
+    def rowCount(self, parent: Any | None = None) -> int:
+        """Return number of rows."""
+        return len(self._data)
+
+    def columnCount(self, parent: Any | None = None) -> int:
+        """Return number of columns."""
+        return len(self.HEADERS)
+
+    def data(self, index: Any, role: Qt.ItemDataRole = Qt.ItemDataRole.DisplayRole) -> Any:
+        """Return data for the given index and role."""
+        if not index.isValid():
+            return None
+        row = index.row()
+        col = index.column()
+
+        if 0 <= row < self.rowCount() and 0 <= col < self.columnCount():
+            if role == Qt.ItemDataRole.DisplayRole:
+                return self._data[row][col + 1]
+            elif role == Qt.ItemDataRole.UserRole:
+                return self._data[row][0]
+        return None
+
+    def headerData(
+        self, section: int, orientation: Qt.Orientation, role: Qt.ItemDataRole = Qt.ItemDataRole.DisplayRole
+    ) -> Any:
+        """Return header data."""
+        if role == Qt.ItemDataRole.DisplayRole and orientation == Qt.Orientation.Horizontal:
+            return self.HEADERS[section]
+        return None
+
+    def clear_data(self) -> None:
+        """Clear all data."""
+        self._data = []
+
+    @staticmethod
+    def delete_item(item: Any) -> None:
+        """Delete item from database."""
+        item.delete_instance()
 
 
 class UnTableView(QTableView):

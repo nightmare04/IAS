@@ -1,6 +1,6 @@
 """Legacy init_tables module - backward compatibility."""
 from app.database import get_database, run_migrations
-from app.models import (
+from data.models import (
     TypeBase,
     PodrazdBase,
     GroupBase,

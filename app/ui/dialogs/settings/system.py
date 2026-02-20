@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from app.models.aircraft import GroupBase, SystemBase, TypeBase
+from data.models.aircraft import GroupBase, SystemBase, TypeBase
 from PyQt6.QtWidgets import QLineEdit
 from app.ui.dialogs.settings.base import UnAddEditDialog, UnDialog
 from app.ui.widgets.combo_box import GroupComboBox, PlaneTypeComboBox

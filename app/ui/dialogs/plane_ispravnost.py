@@ -18,10 +18,9 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from app.models.aircraft import GroupBase, PlaneBase
-from app.models.failures import OtkazAgregateBase
-from app.ui.widgets.tables import IspravnostTable
-from app.ui.models.ispravnost import IspravnostTableModel
+from data.models.aircraft import GroupBase, PlaneBase
+from data.models.failures import OtkazAgregateBase
+from app.ui.widgets.tables import IspravnostTable, IspravnostTableModel
 
 
 class IspravnostFrame(QFrame):
@@ -35,7 +34,7 @@ class IspravnostFrame(QFrame):
 
     def load_data(self) -> None:
         """Load divisions with aircraft."""
-        from app.models.aircraft import PodrazdBase
+        from data.models.aircraft import PodrazdBase
         from app.ui.widgets.groups import PodrGroup
 
         podr_data = PodrazdBase.select()
@@ -233,7 +232,7 @@ class AddOtkazDialog(QDialog):
         """Update system combo filter when group changes."""
         if group:
             # Get available systems considering features
-            from app.models.osob import get_available_systems_for_plane
+            from data.models.osob import get_available_systems_for_plane
 
             available_systems = get_available_systems_for_plane(self.plane, group)
             self.system_combo._model.set_custom_data(available_systems)
@@ -243,7 +242,7 @@ class AddOtkazDialog(QDialog):
         """Update agregate combo filter when system changes."""
         if system:
             # Get available agregates considering features
-            from app.models.osob import get_available_agregates_for_plane
+            from data.models.osob import get_available_agregates_for_plane
 
             available_agregates = get_available_agregates_for_plane(self.plane, system)
             self.agregate_combo._model.set_custom_data(available_agregates)

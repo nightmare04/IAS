@@ -3,7 +3,7 @@ import pytest
 from peewee import SqliteDatabase
 
 from app.database import get_database
-from app.models import (
+from data.models import (
     TypeBase,
     PodrazdBase,
     GroupBase,
