@@ -3,7 +3,7 @@ import pytest
 from PyQt6.QtCore import QModelIndex, Qt
 
 from app.models.aircraft import TypeBase, PodrazdBase, GroupBase, PlaneBase
-from app.ui.models.tables import (
+from app.ui.models.reference import (
     PlanesTypesModel,
     PodrazdModel,
     GroupModel,

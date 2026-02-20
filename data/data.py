@@ -1,6 +1,6 @@
 """
 Legacy data module - backward compatibility.
-Imports from new app.models structure.
+Imports from app.models structure.
 """
 from app.models import (
     TypeBase,

@@ -1,14 +1,31 @@
 """Table models for IAS application."""
-from app.ui.models.tables import (
+from app.models import (
+    AgregateBase,
+    BaseModel,
+    GroupBase,
+    OtkazAgregateBase,
+    OsobAgregateAddBase,
+    OsobAgregateRemoveBase,
+    OsobBase,
+    OsobPlaneBase,
+    OsobSystemAddBase,
+    OsobSystemRemoveBase,
+    PlaneBase,
+    PodrazdBase,
+    SystemBase,
+    TypeBase,
+    db,
+)
+from app.ui.models.base import UnTableModel
+from app.ui.models.ispravnost import IspravnostTableModel
+from app.ui.models.reference import (
     AgregateModel,
     GroupModel,
-    IspravnostTableModel,
     OsobModel,
     PlanesModel,
     PlanesTypesModel,
     PodrazdModel,
     SystemModel,
-    UnTableModel,
 )
 
 __all__ = [
@@ -21,4 +38,21 @@ __all__ = [
     "AgregateModel",
     "PlanesModel",
     "OsobModel",
+    "BaseModel",
+    "db",
+    "TypeBase",
+    "PodrazdBase",
+    "GroupBase",
+    "SystemBase",
+    "AgregateBase",
+    "PlaneBase",
+    "OsobBase",
+    "OsobPlaneBase",
+    "OsobSystemAddBase",
+    "OsobSystemRemoveBase",
+    "OsobAgregateAddBase",
+    "OsobAgregateRemoveBase",
+    "OtkazAgregateBase",
+    "get_available_systems_for_plane",
+    "get_available_agregates_for_plane",
 ]

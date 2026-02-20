@@ -20,7 +20,8 @@ from PyQt6.QtWidgets import (
 
 from app.models.aircraft import GroupBase, PlaneBase
 from app.models.failures import OtkazAgregateBase
-from app.ui.widgets.tables import IspravnostTable, IspravnostTableModel
+from app.ui.widgets.tables import IspravnostTable
+from app.ui.models.ispravnost import IspravnostTableModel
 
 
 class IspravnostFrame(QFrame):
@@ -56,14 +57,14 @@ class IspravnostFrame(QFrame):
         """Clear all widgets from layout."""
         while layout.count():
             item = layout.takeAt(0)
-            widget = item.widget()
+            widget = item.widget() # type: ignore
 
             if widget is not None:
                 widget.deleteLater()
             else:
-                sublayout = item.layout()
+                sublayout = item.layout() # type: ignore
                 if sublayout is not None:
-                    self.clear_layout(sublayout)
+                    self.clear_layout(sublayout) # type: ignore
 
     def update_podr(self) -> None:
         """Update divisions display."""
@@ -292,10 +293,10 @@ class AddOtkazDialog(QDialog):
         if self.item:
             try:
                 self.item.agregate = self.agregate_combo.currentData()
-                self.item.plane = self.plane.id
-                self.item.number = self.agregate_number.text()
-                self.item.removed = self.remove_checkbox.isChecked()
-                self.item.description = self.desc.text()
+                self.item.plane = self.plane.id # type: ignore
+                self.item.number = self.agregate_number.text() # type: ignore
+                self.item.removed = self.remove_checkbox.isChecked() # type: ignore
+                self.item.description = self.desc.text() # type: ignore
                 self.item.save()
                 self.accept()
             except Exception as e:
