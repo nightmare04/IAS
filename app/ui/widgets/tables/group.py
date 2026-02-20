@@ -35,3 +35,6 @@ class GroupTable(UnTableView):
         super().__init__(parent)
         self.table_model = GroupModel()
         self.setModel(self.table_model)
+
+    def set_filter(self, plane_type: str):
+        self.table_model.load_data(filter_str=plane_type)

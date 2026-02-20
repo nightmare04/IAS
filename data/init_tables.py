@@ -1,19 +1,19 @@
 """Legacy init_tables module - backward compatibility."""
 from app.database import get_database, run_migrations
 from data.models import (
-    TypeBase,
-    PodrazdBase,
-    GroupBase,
-    SystemBase,
     AgregateBase,
-    PlaneBase,
+    GroupBase,
+    OsobAgregateAddBase,
+    OsobAgregateRemoveBase,
     OsobBase,
     OsobPlaneBase,
     OsobSystemAddBase,
     OsobSystemRemoveBase,
-    OsobAgregateAddBase,
-    OsobAgregateRemoveBase,
     OtkazAgregateBase,
+    PlaneBase,
+    PodrazdBase,
+    SystemBase,
+    TypeBase,
 )
 
 db = get_database()
@@ -48,7 +48,6 @@ def drop_tables() -> None:
 
 def fill_tables() -> None:
     """Fill tables with example data.
-    
     Note: Example data functionality has been removed.
     Implement your own data seeding logic here if needed.
     """

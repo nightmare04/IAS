@@ -28,4 +28,4 @@ def run_migrations() -> None:
 def create_migration(name: str) -> str:
     """Create a new migration file."""
     router = get_router()
-    return router.create(name)
+    return router.create(name) # type: ignore

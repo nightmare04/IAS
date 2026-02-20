@@ -4,10 +4,10 @@ from typing import Any
 
 from PyQt6.QtWidgets import QLineEdit
 
-from data.models.aircraft import GroupBase, TypeBase
 from app.ui.dialogs.settings.base import UnAddEditDialog, UnDialog
 from app.ui.widgets.combo_box import PlaneTypeComboBox
 from app.ui.widgets.tables import GroupTable
+from data.models.aircraft import GroupBase, TypeBase
 
 
 class SettingsGroup(UnDialog):
@@ -18,9 +18,9 @@ class SettingsGroup(UnDialog):
         self.setWindowTitle("Группы обслуживания")
 
         self.type_combo = PlaneTypeComboBox()
-
         self.setup_ui(GroupTable, {"parent": self})
         self.main_layout.insertWidget(0, self.type_combo)
+        self.type_combo.currentTextChanged.connect(self.table.set_filter)
 
     def add_item(self) -> None:
         selected_type = self.type_combo.currentData()
