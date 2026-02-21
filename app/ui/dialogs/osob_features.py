@@ -15,6 +15,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from app.ui.widgets.combo_box import PlaneTypeComboBox
 from data.models.aircraft import AgregateBase, GroupBase, SystemBase
 from data.models.osob import (
     OsobAgregateAddBase,
@@ -23,7 +24,6 @@ from data.models.osob import (
     OsobSystemAddBase,
     OsobSystemRemoveBase,
 )
-from app.ui.widgets.combo_box import PlaneTypeComboBox
 
 
 class OsobFeatureDialog(QDialog):
@@ -119,16 +119,16 @@ class OsobFeatureDialog(QDialog):
             self.load_data()
         else:
             # Enable save only when type is selected
-            self.save_button.setEnabled(False)
+            self.save_button.setEnabled(False) # type: ignore
 
     def on_type_changed(self, plane_type: Any) -> None:
         """Update systems and blocks lists when type changes."""
         if plane_type:
-            self.save_button.setEnabled(True)
+            self.save_button.setEnabled(True) # type: ignore
             self.load_systems()
             self.load_blocks()
         else:
-            self.save_button.setEnabled(False)
+            self.save_button.setEnabled(False) # type: ignore
             self.clear_lists()
 
     def load_data(self) -> None:
@@ -262,7 +262,7 @@ class OsobFeatureDialog(QDialog):
         try:
             # Create or update feature
             if self.osob:
-                self.osob.name = name
+                self.osob.name = name # type: ignore
                 self.osob.plane_type = plane_type
                 self.osob.save()
 

@@ -5,10 +5,10 @@ from typing import Any
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QLineEdit
 
-from data.models.aircraft import AgregateBase, GroupBase, SystemBase, TypeBase
 from app.ui.dialogs.settings.base import UnAddEditDialog, UnDialog
 from app.ui.widgets.combo_box import GroupComboBox, PlaneTypeComboBox, SystemComboBox
 from app.ui.widgets.tables import AgregateTable
+from data.models.aircraft import AgregateBase, GroupBase, SystemBase, TypeBase
 
 
 class SettingsAgregate(UnDialog):
@@ -140,12 +140,15 @@ class AddAgregate(UnAddEditDialog):
             self.type_combo.setCurrentText(str(filter_type.name))
             self.group_combo.set_filter(filter_type)
             self.group_combo._model.refresh()
+            self.agregate_edit.setFocus()
         if isinstance(filter_group, GroupBase):
             self.group_combo.setCurrentText(str(filter_group.name))
             self.system_combo.set_filter(filter_group)
             self.system_combo._model.refresh()
+            self.agregate_edit.setFocus()
         if isinstance(filter_system, SystemBase):
             self.system_combo.setCurrentText(str(filter_system.name))
+            self.agregate_edit.setFocus()
 
     def edit_dialog(self, item: Any) -> None:
         super().edit_dialog(item)
@@ -153,6 +156,7 @@ class AddAgregate(UnAddEditDialog):
         self.group_combo.setCurrentText(item.system.group.name)
         self.system_combo.setCurrentText(item.system.name)
         self.agregate_edit.setText(item.name)
+        self.agregate_edit.setFocus()
 
     def add_or_save_item(self) -> None:
         """Save or update agregate."""
