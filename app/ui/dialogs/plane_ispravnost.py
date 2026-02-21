@@ -18,9 +18,10 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from data.models.aircraft import GroupBase, PlaneBase
-from data.models.failures import OtkazAgregateBase
+from app.ui.widgets.groups import PodrGroup
 from app.ui.widgets.tables import IspravnostTable, IspravnostTableModel
+from data.models.aircraft import GroupBase, PlaneBase, PodrazdBase
+from data.models.failures import OtkazAgregateBase
 
 
 class IspravnostFrame(QFrame):
@@ -33,8 +34,7 @@ class IspravnostFrame(QFrame):
 
     def load_data(self) -> None:
         """Load divisions with aircraft."""
-        from data.models.aircraft import PodrazdBase
-        from app.ui.widgets.groups import PodrGroup
+
 
         podr_data = PodrazdBase.select()
         for i, podr in enumerate(podr_data):
@@ -91,16 +91,9 @@ class PlaneIspravnost(QDialog):
             self.filter_combo.addItem(group.name)
         self.filter_combo.currentTextChanged.connect(self.filter_by_category)
 
-        self.add_btn = QPushButton("➕ Добавить блок / агрегат")
-        self.add_btn.clicked.connect(self.add_item)
-
         self.control_layout.addWidget(QLabel("Фильтр по группе:"))
         self.control_layout.addWidget(self.filter_combo)
         self.control_layout.addStretch()
-
-        self.osob_btn = QPushButton("⚙️ Особенности")
-        self.osob_btn.clicked.connect(self.open_osob_dialog)
-        self.control_layout.addWidget(self.osob_btn)
 
         self.add_btn = QPushButton("➕ Добавить блок / агрегат")
         self.add_btn.clicked.connect(self.add_item)
@@ -116,13 +109,6 @@ class PlaneIspravnost(QDialog):
     def filter_by_category(self, category: str) -> None:
         """Filter table by category."""
         self.load_data(category_filter=category)
-
-    def open_osob_dialog(self) -> None:
-        """Open dialog for selecting aircraft features."""
-        from app.ui.dialogs.select_osob import SelectOsobDialog
-
-        dialog = SelectOsobDialog(self.plane, self)
-        dialog.exec()
 
     def edit_item(self, item: Any) -> None:
         """Edit failure item."""

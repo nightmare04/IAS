@@ -23,8 +23,11 @@ class MainForm(QMainWindow):
     def __init__(self, parent: Any | None = None) -> None:
         super().__init__(parent)
         self.menu = self.menuBar()
+        assert self.menu is not None
 
         settings_menu = self.menu.addMenu("&Настройки")
+        assert settings_menu is not None
+
         type_action = QAction("Типы самолетов", self)
         type_action.triggered.connect(self.plane_type_dialog)
         osob_action = QAction("Особенности самолетов", self)
@@ -39,6 +42,8 @@ class MainForm(QMainWindow):
         planes_action.triggered.connect(self.planes_dialog)
         agreg_action = QAction("Блоки/агрегаты", self)
         agreg_action.triggered.connect(self.agregate_dialog)
+        osob_action = QAction("Модификации/Модернизации")
+        osob_action.triggered.connect(self.osob_dialog)
 
         settings_menu.addAction(type_action)
         settings_menu.addAction(osob_action)
@@ -48,6 +53,7 @@ class MainForm(QMainWindow):
         settings_menu.addSeparator()
         settings_menu.addAction(planes_action)
         settings_menu.addAction(agreg_action)
+        settings_menu.addAction(osob_action)
 
         self.setWindowTitle("Исправность")
         self.setGeometry(100, 100, 800, 600)
