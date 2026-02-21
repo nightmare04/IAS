@@ -4,7 +4,7 @@ from typing import Any
 from PyQt6.QtCore import QAbstractTableModel, QModelIndex, Qt, QTimer
 from PyQt6.QtGui import QBrush, QColor, QFont
 
-from data.models.aircraft import PlaneBase
+from data.models.aircraft import PlaneBase, SystemBase, AgregateBase, GroupBase
 from data.models.failures import OtkazAgregateBase
 
 from .base_table import UnTableView
@@ -37,14 +37,18 @@ class IspravnostTableModel(QAbstractTableModel):
     def load_data(self) -> None:
         """Load failure data for the aircraft."""
         self.beginResetModel()
-        self._prepared_data = []
+        self._data = []
         self._group_rows = set()
         self._row_type = []
+        self._prepared_data = []
 
         self._data = (OtkazAgregateBase
                       .select()
+                      .join(AgregateBase)
+                      .join(SystemBase)
+                      .join(GroupBase)
                       .where(OtkazAgregateBase.plane == self.plane)
-                      .order_by(OtkazAgregateBase.agregate.system.name))
+                      .order_by(OtkazAgregateBase.agregate.system.group))
 
         current_group: str | None = None
 
@@ -55,7 +59,6 @@ class IspravnostTableModel(QAbstractTableModel):
                 current_group = group_value
 
             self._add_agregate_row(item)
-
         self.endResetModel()
 
     def _add_group_row(self, group_name: str) -> None:
@@ -161,27 +164,21 @@ class IspravnostTable(UnTableView):
     def set_span_for_groups(self) -> None:
         """Set row spans for group rows."""
         self.clear_all_span()
-        if isinstance(self.table_model, IspravnostTableModel):
-            for row in range(self.table_model.rowCount()):
-                if self.table_model.get_row_type(row) == 'group':
-                    self.setSpan(row, 0, 1, self.table_model.columnCount())
+        for row in range(self.table_model.rowCount()):
+            if self.table_model.get_row_type(row) == 'group':
+                self.setSpan(row, 0, 1, self.table_model.columnCount())
 
     def clear_all_span(self) -> None:
         """Clear all row spans."""
-        if isinstance(self.table_model, IspravnostTableModel):
-            rows = self.table_model.rowCount()
-            cols = self.table_model.columnCount()
-            for row in range(rows):
-                for col in range(cols):
-                    if self.rowSpan(row, col) > 1:
-                        self.setSpan(row, col, 1, 1)
-
-    def set_filter(self, filter_text: str) -> None:
-        """Set filter for table data."""
-        pass
+        rows = self.table_model.rowCount()
+        cols = self.table_model.columnCount()
+        for row in range(rows):
+            for col in range(cols):
+                if self.rowSpan(row, col)> 1 or self.columnSpan(row,col)> 1:
+                    self.setSpan(row, col, 1, 1)
 
     def load_data(self) -> None:
         """Load data from database."""
         self.table_model.load_data()
-        self.clear_all_span()
-        QTimer.singleShot(0, self.set_span_for_groups)
+        self.set_span_for_groups()
+        

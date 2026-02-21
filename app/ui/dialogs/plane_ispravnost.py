@@ -25,7 +25,6 @@ from app.ui.widgets.tables import IspravnostTable, IspravnostTableModel
 
 class IspravnostFrame(QFrame):
     """Frame displaying aircraft by division."""
-
     def __init__(self) -> None:
         super().__init__()
         self.podr_layout = QGridLayout()
@@ -176,7 +175,7 @@ class PlaneIspravnost(QDialog):
 
     def load_data(self, category_filter: str | None = None) -> None:
         """Load failure data."""
-        self.table_view.table_model.load_data()
+        self.table_view.load_data()
         self.table_view.set_span_for_groups()
 
 
