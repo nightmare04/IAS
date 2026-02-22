@@ -4,10 +4,11 @@ from typing import Any
 
 from PyQt6.QtWidgets import QLineEdit
 
-from data.models.aircraft import PlaneBase
 from app.ui.dialogs.settings.base import UnAddEditDialog, UnDialog
 from app.ui.widgets.combo_box import PlaneTypeComboBox, PodrazdComboBox
 from app.ui.widgets.tables import PlanesTable
+from app.ui.widgets.groups import OsobGroup
+from data.models.aircraft import PlaneBase
 
 
 class SettingsPlanes(UnDialog):
@@ -53,14 +54,22 @@ class AddPlane(UnAddEditDialog):
         self.setWindowTitle("Добавить самолет")
 
         self.type_combo = PlaneTypeComboBox()
+        self.type_combo.changed.connect(self.set_osob_group)
         self.podrazd_combo = PodrazdComboBox()
         self.bort_edit = QLineEdit()
         self.zav_edit = QLineEdit()
-
+        self.osob_group = OsobGroup()
+        self.main_layout.addWidget(self.osob_group)
         self.form_layout.addRow("Тип самолета", self.type_combo)
         self.form_layout.addRow("Подразделение:", self.podrazd_combo)
         self.form_layout.addRow("Бортовой номер:", self.bort_edit)
         self.form_layout.addRow("Заводской номер:", self.zav_edit)
+        self.form_layout.addRow("Модернизации:", self.osob_group)
+
+    def set_osob_group(self, type):
+        self.form_layout.removeRow(self.osob_group)
+        self.osob_group = OsobGroup(type)
+        self.form_layout.addRow("Модернизации:", self.osob_group)
 
     def edit_dialog(self, item: Any) -> None:
         super().edit_dialog(item)

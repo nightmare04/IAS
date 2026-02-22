@@ -28,7 +28,7 @@ class OsobModel(UnTableModel):
             query = OsobBase.select()
 
         for data in query:
-            self._data.append([data.plane_type, data.name])
+            self._data.append([data, data.plane_type, data.name])
         self.endResetModel()
 
 

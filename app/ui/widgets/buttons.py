@@ -5,7 +5,7 @@ from PyQt6.QtCore import QSize, pyqtSignal
 from PyQt6.QtWidgets import QPushButton
 
 if TYPE_CHECKING:
-    from data.models.aircraft import PlaneBase
+    from data.models import OsobBase, PlaneBase
 
 
 class IASButton(QPushButton):
@@ -64,3 +64,17 @@ class PlaneBtn(QPushButton):
             self.setStyleSheet("PlaneBtn{background-color: red;}")
         else:
             self.setStyleSheet("PlaneBtn{background-color: green;}")
+
+class OsobBtn(IASButton):
+    def __init__(self, osob:OsobBase, parent=None):
+        super().__init__(osob.name, parent)
+        self.osob = osob
+        self.setCheckable(True)
+        self.setChecked(False)
+        self.toggled.connect(self.update_color)
+
+    def update_color(self):
+        if self.isChecked():
+            self.setStyleSheet("OsobBtn{background-color: green;}")
+        else:
+            self.setStyleSheet("OsobBtn{background-color: red;}")

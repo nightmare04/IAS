@@ -4,10 +4,8 @@ from typing import TYPE_CHECKING, Any
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QGridLayout, QGroupBox
 
-from app.ui.widgets.buttons import PlaneBtn
-
-if TYPE_CHECKING:
-    from data.models.aircraft import PodrazdBase
+from app.ui.widgets.buttons import OsobBtn, PlaneBtn
+from data.models import OsobBase, OsobPlaneBase, PlaneBase, PodrazdBase, TypeBase
 
 
 class PodrGroup(QGroupBox):
@@ -25,8 +23,6 @@ class PodrGroup(QGroupBox):
 
     def load_planes(self) -> None:
         """Load aircraft buttons for this division."""
-        from data.models.aircraft import PlaneBase
-
         planes = PlaneBase.select().where(PlaneBase.podrazd == self.podr.id)
         for p, plane in enumerate(planes):
             row_p = p // 3
@@ -38,3 +34,34 @@ class PodrGroup(QGroupBox):
     def open_ispravnost(self, btn: PlaneBtn) -> None:
         """Emit open signal with aircraft button."""
         self.open_signal.emit(btn)
+
+class OsobGroup(QGroupBox):
+    def __init__(self, type:TypeBase = None, parent = None):
+        super().__init__(parent)
+        self.type = type
+        self.btns = []
+        self.main_layout = QGridLayout()
+        self.setLayout(self.main_layout)
+        if type:
+            self.load_osobs(type)
+
+    def load_osobs(self, type: TypeBase):
+        osobs = OsobBase.select().where(OsobBase.plane_type == type)
+        for p, osob in enumerate(osobs):
+            row_p = p // 3
+            col_p = p % 3
+            btn = OsobBtn(osob)
+            self.btns.append(btn)
+            self.main_layout.addWidget(btn, row_p, col_p)
+
+    def save_osobs(self, plane: PlaneBase):
+        for btn in self.btns:
+            osob = OsobPlaneBase.get_or_none(OsobPlaneBase.plane == plane)
+            if btn.isChecked:
+                if osob is None:
+                    new_osob = OsobPlaneBase()
+                    new_osob.osob = self.btn.osob
+                    new_osob.plane = plane
+                    new_osob.save()
+            else:
+                osob.delete_instance()
