@@ -4,6 +4,7 @@ database.db
 test_new.py
 __pycache__
 .pytest_cache
+.ruff_cache
 .vscode
 .DS_Store
 *.pyc
