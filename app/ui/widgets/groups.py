@@ -56,12 +56,13 @@ class OsobGroup(QGroupBox):
 
     def save_osobs(self, plane: PlaneBase):
         for btn in self.btns:
-            osob = OsobPlaneBase.get_or_none(OsobPlaneBase.plane == plane)
-            if btn.isChecked:
-                if osob is None:
+            osob_plane = OsobPlaneBase.get_or_none(OsobPlaneBase.plane == plane, OsobPlaneBase.osob == btn.osob)
+            if btn.isChecked():
+                if osob_plane is None:
                     new_osob = OsobPlaneBase()
-                    new_osob.osob = self.btn.osob
+                    new_osob.osob = btn.osob
                     new_osob.plane = plane
                     new_osob.save()
             else:
-                osob.delete_instance()
+                if osob_plane:
+                    osob_plane.delete_instance()

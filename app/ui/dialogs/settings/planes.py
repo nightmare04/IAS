@@ -6,8 +6,8 @@ from PyQt6.QtWidgets import QLineEdit
 
 from app.ui.dialogs.settings.base import UnAddEditDialog, UnDialog
 from app.ui.widgets.combo_box import PlaneTypeComboBox, PodrazdComboBox
-from app.ui.widgets.tables import PlanesTable
 from app.ui.widgets.groups import OsobGroup
+from app.ui.widgets.tables import PlanesTable
 from data.models.aircraft import PlaneBase
 
 
@@ -77,6 +77,13 @@ class AddPlane(UnAddEditDialog):
         self.podrazd_combo.setCurrentText(item.podrazd.name)
         self.bort_edit.setText(item.bort_number)
         self.zav_edit.setText(item.zav_num)
+        # Загружаем выбранные модернизации
+        from data.models import OsobPlaneBase
+        selected_osobs = [
+            op.osob for op in OsobPlaneBase.select().where(OsobPlaneBase.plane == item)
+        ]
+        for btn in self.osob_group.btns:
+            btn.setChecked(btn.osob in selected_osobs)
 
     def add_or_save_item(self) -> None:
         bort = self.bort_edit.text().strip()
@@ -101,18 +108,22 @@ class AddPlane(UnAddEditDialog):
             return
 
         if self.item:
-            self.item.plane_type = plane_type
-            self.item.podrazd = podrazd
-            self.item.bort_number = bort
-            self.item.zav_num = zav
-            self.item.save()
+            plane = self.item
+            plane.plane_type = plane_type
+            plane.podrazd = podrazd
+            plane.bort_number = bort
+            plane.zav_num = zav
+            plane.save()
         else:
-            PlaneBase.create(
+            plane = PlaneBase.create(
                 plane_type=plane_type,
                 podrazd=podrazd,
                 bort_number=bort,
                 zav_num=zav,
             )
+
+        # Сохраняем выбранные модернизации
+        self.osob_group.save_osobs(plane)
 
         self.updated.emit()
         self.accept()
