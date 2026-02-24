@@ -111,6 +111,7 @@ class OsobFeatureDialog(QDialog):
         self.system_add_checks: dict[int, QCheckBox] = {}
         self.block_remove_checks: dict[int, QCheckBox] = {}
         self.block_add_checks: dict[int, QCheckBox] = {}
+        self.system_to_blocks_map: dict[int, list[int]] = {}  # system_id -> [block_ids]
 
         # Connect type change to update lists
         self.type_combo.changed.connect(self.on_type_changed)
@@ -148,8 +149,8 @@ class OsobFeatureDialog(QDialog):
         if not plane_type:
             return
 
-        # Get existing systems for this type
-        existing_systems = SystemBase.select().join(GroupBase).where(GroupBase.plane_type == plane_type)
+        # Get all systems for this type
+        all_systems = list(SystemBase.select().join(GroupBase).where(GroupBase.plane_type == plane_type))
 
         # Get systems to remove/add for this feature
         systems_to_remove = set()
@@ -163,36 +164,35 @@ class OsobFeatureDialog(QDialog):
                 s.system.id for s in OsobSystemAddBase.select().where(OsobSystemAddBase.osob == self.osob)
             }
 
-        # Create checkboxes for remove
-        for system in existing_systems:
-            cb = QCheckBox(f"{system.name} (Группа: {system.group.name})")
-            cb.setChecked(system.id in systems_to_remove)
-            self.systems_remove_layout.addWidget(cb)
-            self.system_remove_checks[system.id] = cb
+        # Create checkboxes for remove AND add (same systems for both)
+        for system in all_systems:
+            # For remove
+            cb_remove = QCheckBox(f"{system.name} (Группа: {system.group.name})")
+            cb_remove.setChecked(system.id in systems_to_remove)
+            self.systems_remove_layout.addWidget(cb_remove)
+            self.system_remove_checks[system.id] = cb_remove
+            cb_remove.stateChanged.connect(lambda state, sys_id=system.id: self.on_system_toggled(sys_id, "remove"))
 
-        # Create checkboxes for add (show systems from other types)
-        other_systems = SystemBase.select().join(GroupBase).where(
-            GroupBase.plane_type != plane_type
-        ).where(SystemBase.id.not_in(existing_systems))
-
-        for system in other_systems:
-            cb = QCheckBox(f"{system.name} (Тип: {system.plane_type.name})")
-            cb.setChecked(system.id in systems_to_add)
-            self.systems_add_layout.addWidget(cb)
-            self.system_add_checks[system.id] = cb
+            # For add
+            cb_add = QCheckBox(f"{system.name} (Группа: {system.group.name})")
+            cb_add.setChecked(system.id in systems_to_add)
+            self.systems_add_layout.addWidget(cb_add)
+            self.system_add_checks[system.id] = cb_add
+            cb_add.stateChanged.connect(lambda state, sys_id=system.id: self.on_system_toggled(sys_id, "add"))
 
     def load_blocks(self) -> None:
         """Load blocks for selected aircraft type."""
         # Clear existing checkboxes
         self._clear_checkboxes(self.block_remove_checks)
         self._clear_checkboxes(self.block_add_checks)
+        self.system_to_blocks_map.clear()
 
         plane_type = self.type_combo.currentData()
         if not plane_type:
             return
 
-        # Get existing blocks for this type
-        existing_blocks = (
+        # Get all blocks for this type
+        all_blocks = list(
             AgregateBase.select()
             .join(SystemBase)
             .join(GroupBase)
@@ -211,33 +211,92 @@ class OsobFeatureDialog(QDialog):
                 b.agregate.id for b in OsobAgregateAddBase.select().where(OsobAgregateAddBase.osob == self.osob)
             }
 
-        # Create checkboxes for remove
-        for block in existing_blocks:
-            cb = QCheckBox(f"{block.name} (Система: {block.system.name})")
-            cb.setChecked(block.id in blocks_to_remove)
-            self.blocks_remove_layout.addWidget(cb)
-            self.block_remove_checks[block.id] = cb
+        # Create checkboxes for remove AND add (same blocks for both)
+        for block in all_blocks:
+            # For remove
+            cb_remove = QCheckBox(f"{block.name} (Система: {block.system.name})")
+            cb_remove.setChecked(block.id in blocks_to_remove)
+            self.blocks_remove_layout.addWidget(cb_remove)
+            self.block_remove_checks[block.id] = cb_remove
+            cb_remove.stateChanged.connect(lambda state, blk_id=block.id: self.on_block_toggled(blk_id, "remove"))
+            
+            # Add to system->blocks mapping for remove
+            sys_id = block.system.id
+            if sys_id not in self.system_to_blocks_map:
+                self.system_to_blocks_map[sys_id] = []
+            self.system_to_blocks_map[sys_id].append(block.id)
 
-        # Create checkboxes for add (show blocks from other types)
-        other_blocks = (
-            AgregateBase.select()
-            .join(SystemBase)
-            .join(GroupBase)
-            .where(GroupBase.plane_type != plane_type)
-            .where(AgregateBase.id.not_in(existing_blocks))
-        )
-
-        for block in other_blocks:
-            cb = QCheckBox(f"{block.name} (Тип: {block.plane_type.name})")
-            cb.setChecked(block.id in blocks_to_add)
-            self.blocks_add_layout.addWidget(cb)
-            self.block_add_checks[block.id] = cb
+            # For add
+            cb_add = QCheckBox(f"{block.name} (Система: {block.system.name})")
+            cb_add.setChecked(block.id in blocks_to_add)
+            self.blocks_add_layout.addWidget(cb_add)
+            self.block_add_checks[block.id] = cb_add
+            cb_add.stateChanged.connect(lambda state, blk_id=block.id: self.on_block_toggled(blk_id, "add"))
+            
+            # Add to system->blocks mapping for add (same blocks)
+            if sys_id not in self.system_to_blocks_map:
+                self.system_to_blocks_map[sys_id] = []
+            if block.id not in self.system_to_blocks_map[sys_id]:
+                self.system_to_blocks_map[sys_id].append(block.id)
 
     def _clear_checkboxes(self, checks_dict: dict) -> None:
         """Clear and delete checkboxes."""
         for cb in checks_dict.values():
             cb.deleteLater()
         checks_dict.clear()
+
+    def on_system_toggled(self, system_id: int, action: str) -> None:
+        """Handle system checkbox toggle - auto-select corresponding blocks."""
+        if action == "remove":
+            system_cb = self.system_remove_checks.get(system_id)
+            blocks_checks = self.block_remove_checks
+        else:
+            system_cb = self.system_add_checks.get(system_id)
+            blocks_checks = self.block_add_checks
+
+        if not system_cb:
+            return
+
+        is_checked = system_cb.isChecked()
+
+        # Get all blocks for this system from our mapping
+        system_blocks = self.system_to_blocks_map.get(system_id, [])
+
+        # Toggle all blocks for this system that are in our checkboxes
+        for block_id in system_blocks:
+            if block_id in blocks_checks:
+                blocks_checks[block_id].setChecked(is_checked)
+
+    def on_block_toggled(self, block_id: int, action: str) -> None:
+        """Handle block checkbox toggle - auto-select corresponding system if all blocks are selected."""
+        if action == "remove":
+            block_cb = self.block_remove_checks.get(block_id)
+            blocks_checks = self.block_remove_checks
+            system_checks = self.system_remove_checks
+        else:
+            block_cb = self.block_add_checks.get(block_id)
+            blocks_checks = self.block_add_checks
+            system_checks = self.system_add_checks
+
+        if not block_cb:
+            return
+
+        # Get block system from DB
+        block = AgregateBase.get_by_id(block_id)
+        system_id = block.system.id
+
+        # Get all blocks for this system from our mapping
+        system_blocks_in_list = self.system_to_blocks_map.get(system_id, [])
+
+        # Check if all visible blocks for this system are selected
+        all_blocks_checked = all(
+            blocks_checks[blk_id].isChecked()
+            for blk_id in system_blocks_in_list
+        )
+
+        # Update system checkbox only if there are blocks in the list
+        if system_id in system_checks and system_blocks_in_list:
+            system_checks[system_id].setChecked(all_blocks_checked)
 
     def clear_lists(self) -> None:
         """Clear all checkbox lists."""
