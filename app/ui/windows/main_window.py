@@ -30,8 +30,6 @@ class MainForm(QMainWindow):
 
         type_action = QAction("Типы самолетов", self)
         type_action.triggered.connect(self.plane_type_dialog)
-        osob_action = QAction("Особенности самолетов", self)
-        osob_action.triggered.connect(self.osob_dialog)
         podr_action = QAction("Подразделения", self)
         podr_action.triggered.connect(self.podr_dialog)
         group_action = QAction("Группы обслуживания", self)
@@ -42,18 +40,17 @@ class MainForm(QMainWindow):
         planes_action.triggered.connect(self.planes_dialog)
         agreg_action = QAction("Блоки/агрегаты", self)
         agreg_action.triggered.connect(self.agregate_dialog)
-        osob_action = QAction("Модификации/Модернизации")
-        osob_action.triggered.connect(self.osob_dialog)
+        moderniz_action = QAction("Модификации/Модернизации", self)
+        moderniz_action.triggered.connect(self.moderniz_dialog)
 
         settings_menu.addAction(type_action)
-        settings_menu.addAction(osob_action)
         settings_menu.addAction(podr_action)
         settings_menu.addAction(group_action)
         settings_menu.addAction(system_action)
         settings_menu.addSeparator()
         settings_menu.addAction(planes_action)
         settings_menu.addAction(agreg_action)
-        settings_menu.addAction(osob_action)
+        settings_menu.addAction(moderniz_action)
 
         self.setWindowTitle("Исправность")
         self.setGeometry(100, 100, 800, 600)
@@ -66,8 +63,8 @@ class MainForm(QMainWindow):
         main_layout.addWidget(self.frame, stretch=8)
         self.central_widget.setLayout(main_layout)
 
-    def osob_dialog(self) -> None:
-        """Open aircraft features dialog."""
+    def moderniz_dialog(self) -> None:
+        """Open modernizations dialog."""
         dialog = SettingsOsob(self)
         dialog.exec()
 
